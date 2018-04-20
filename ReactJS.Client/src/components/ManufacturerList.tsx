@@ -145,6 +145,7 @@ export class ManufacturerList extends React.Component<any, any> {
                                     <ListTableRow key = {i} data = {manufacturer} 
                                           editorCaller={this.props.toggleEditor}/>)}    
                                           <Popup 
+                                            className="modal-dialog"
                                             open={this.state.onWarninPopup}
                                             modal="true"
                                             closeOnDocumentClick="true"
@@ -156,26 +157,32 @@ export class ManufacturerList extends React.Component<any, any> {
                                                 } 
                                             } 
                                           >
-                                            <span> Are you sure you want to delete this manufacture? </span>
-                                            <br/> <hr/>
-                                            <button
-                                                className="button"
-                                                onClick={
-                                                    // tslint:disable-next-line:jsx-no-lambda
-                                                    () => { console.log('closeing popup'); this.setState({onWarninPopup: false}) }
-                                                }
-                                            >
-                                                Yes, sure!
-                                            </button>
-                                            <button
-                                                className="button"
-                                                onClick={
-                                                    // tslint:disable-next-line:jsx-no-lambda
-                                                    () => { console.log('closeing popup'); this.setState({onWarninPopup: false}) }
-                                                }
-                                            >
-                                                Cancel my decision!
-                                            </button>
+                                             <div className="modal-content">
+                                            <div className="modal-body alert-danger" >
+                                                 Are you sure you want to delete this manufacture? 
+                                                                     
+                                            <div className="modal-footer">
+                                                <button
+                                                    className="btn btn-warning"
+                                                    onClick={
+                                                        // tslint:disable-next-line:jsx-no-lambda
+                                                        () => { console.log('closeing popup'); this.setState({onWarninPopup: false}) }
+                                                    }
+                                                >
+                                                    Yes, sure!
+                                                </button>
+                                                <button
+                                                    className="btn btn-primary"
+                                                    onClick={
+                                                        // tslint:disable-next-line:jsx-no-lambda
+                                                        () => { console.log('closeing popup'); this.setState({onWarninPopup: false}) }
+                                                    }
+                                                >
+                                                    Cancel my decision!
+                                                </button>
+                                            </div>
+                                            </div>
+                                            </div>
                                         </Popup>                  
                     </tbody>
                 </table>    
