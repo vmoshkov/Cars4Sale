@@ -2,8 +2,12 @@ import * as React from "react";
 
 import ContextMenu from  'context-menu';
 import 'context-menu/lib/styles.css';
+import Popup from "reactjs-popup";
+import EventEmitter from 'tiny-emitter';
 import {DataProvider} from './DataProvider';
 
+const emitter: EventEmitter = new EventEmitter();
+ 
 
 export class ListNavmenu extends React.Component<any, any> {
 
@@ -22,15 +26,17 @@ export class ListNavmenu extends React.Component<any, any> {
 
 // tslint:disable-next-line:max-classes-per-file
 export class ListTableRow extends React.Component<any, any> {
+    
     constructor(props: any){
         super(props);
 
         // This binding is necessary to make `this` work in the callback
-       this.handleOnContextMenu = this.handleOnContextMenu.bind(this);
+       this.handleOnContextMenu = this.handleOnContextMenu.bind(this);       
+       
     }
    
     public handleOnContextMenu(e: React.MouseEvent<HTMLTableRowElement>): void {
-        e.preventDefault();
+        e.preventDefault();        
                
         // menu data
         const menuData: any = [
@@ -48,7 +54,8 @@ export class ListTableRow extends React.Component<any, any> {
                     id: this.props.data.id,
                     // tslint:disable-next-line:object-literal-sort-keys
                     handler: this.props.editorCaller,
-                    label: 'Edit', onClick() {  
+                    label: 'Edit', 
+                    onClick() {  
                         this.handler(this.id);
                     }, 
                 },
@@ -56,23 +63,16 @@ export class ListTableRow extends React.Component<any, any> {
                     id: this.props.data.id,
                     // tslint:disable-next-line:object-literal-sort-keys
                     handler: this.props.editorCaller,
-                    label: 'Delete', disabled: false, onClick() {
+                    label: 'Delete', 
+                    disabled: false, 
+                    onClick() {
                         // TODO: выводить предупреждающее окно
-                        DataProvider.deleteManufacturer(this.id);
+                        emitter.emit('accept-delete-manufacturer', this.id);                        
                     }, 
-                },
-                {label: 'Sort by', submenu: [
-                    [
-                        {label: 'Name', onClick() { /** impl */ }},
-                        {label: 'Date', onClick() { /** impl */ }},
-                        {label: 'Size', onClick() { /** impl */ }},
-                    ],
-                ]},
-            ]
+                }            ]
         ];
 
         const handle = ContextMenu.showMenu(menuData);
-
     }
 
     public render() {
@@ -96,7 +96,8 @@ export class ManufacturerList extends React.Component<any, any> {
         super(props);
     
         this.state = {
-            data: DataProvider.getAllManufacturers()
+            data: DataProvider.getAllManufacturers(),
+            onWarninPopup: false
         };
         
        console.log(props);       
@@ -111,6 +112,18 @@ export class ManufacturerList extends React.Component<any, any> {
        const htmlElem  = (document.getElementById('mufacturers_list_table') as  HTMLElement);
    
        ContextMenu.init(htmlElem);
+
+       // Регистрирую обработчик события подтверждения удаления по контекстному меню
+       emitter.on('accept-delete-manufacturer', (objectId:string) => {
+            console.log("Are you sure you want to delete manufacturer with id " + objectId);
+            if (this.state.onWarninPopup) {
+                this.setState({onWarninPopup: false});
+            } 
+            else {
+                this.setState({onWarninPopup: true});
+            }
+            DataProvider.deleteManufacturer(objectId);
+       });
     }  
 
 
@@ -130,7 +143,40 @@ export class ManufacturerList extends React.Component<any, any> {
                             {this.state.data.map(
                                 (manufacturer: any, i: number) => 
                                     <ListTableRow key = {i} data = {manufacturer} 
-                                          editorCaller={this.props.toggleEditor}/>)}                      
+                                          editorCaller={this.props.toggleEditor}/>)}    
+                                          <Popup 
+                                            open={this.state.onWarninPopup}
+                                            modal="true"
+                                            closeOnDocumentClick="true"
+                                            onClose={ 
+                                                // tslint:disable-next-line:jsx-no-lambda
+                                                () => { 
+                                                    console.log('closeing popup'); 
+                                                    this.setState({onWarninPopup: false}) 
+                                                } 
+                                            } 
+                                          >
+                                            <span> Are you sure you want to delete this manufacture? </span>
+                                            <br/> <hr/>
+                                            <button
+                                                className="button"
+                                                onClick={
+                                                    // tslint:disable-next-line:jsx-no-lambda
+                                                    () => { console.log('closeing popup'); this.setState({onWarninPopup: false}) }
+                                                }
+                                            >
+                                                Yes, sure!
+                                            </button>
+                                            <button
+                                                className="button"
+                                                onClick={
+                                                    // tslint:disable-next-line:jsx-no-lambda
+                                                    () => { console.log('closeing popup'); this.setState({onWarninPopup: false}) }
+                                                }
+                                            >
+                                                Cancel my decision!
+                                            </button>
+                                        </Popup>                  
                     </tbody>
                 </table>    
 
