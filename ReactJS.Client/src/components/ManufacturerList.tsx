@@ -2,11 +2,12 @@ import * as React from "react";
 
 import ContextMenu from  'context-menu';
 import 'context-menu/lib/styles.css';
+import {DataProvider} from './DataProvider';
 
 
 export class ListNavmenu extends React.Component<any, any> {
 
-    render() {
+    public render() {
         return (     
                 <nav className="navbar navbar-expand-lg navbar-light bg-light">
                      <a className="navbar-brand" href="#">
@@ -19,6 +20,7 @@ export class ListNavmenu extends React.Component<any, any> {
 
 }
 
+// tslint:disable-next-line:max-classes-per-file
 export class ListTableRow extends React.Component<any, any> {
     constructor(props: any){
         super(props);
@@ -27,34 +29,38 @@ export class ListTableRow extends React.Component<any, any> {
        this.handleOnContextMenu = this.handleOnContextMenu.bind(this);
     }
    
-    static createNew():void {
-        console.log("create new");
-    }
-
-    static open(id: string):void {
-        console.log("open with id =" + id);
-    }
-
-    static delete(id: string):void{
-        console.log("delete with id =" + id);
-    }
-
-    handleOnContextMenu(e: React.MouseEvent<HTMLTableRowElement>): void {
+    public handleOnContextMenu(e: React.MouseEvent<HTMLTableRowElement>): void {
         e.preventDefault();
                
-        //console.log(e.currentTarget);  
-
-        const data: any = [
+        // menu data
+        const menuData: any = [
             [
-                {label: 'Create new', onClick() { 
-                    ListTableRow.createNew();                  
-                }, id: this.props.data.id},
-                {label: 'Edit', onClick() {  
-                    ListTableRow.open(this.id); 
-                }, id: this.props.data.id},
-                {label: 'Delete', disabled: false, onClick() {
-                    ListTableRow.delete(this.id); 
-                }, id: this.props.data.id},
+                {
+                    id: this.props.data.id,
+                    // tslint:disable-next-line:object-literal-sort-keys
+                    handler: this.props.editorCaller,
+                    label: 'Create new', 
+                    onClick() { 
+                        this.handler('new');                  
+                    }, 
+                },
+                {
+                    id: this.props.data.id,
+                    // tslint:disable-next-line:object-literal-sort-keys
+                    handler: this.props.editorCaller,
+                    label: 'Edit', onClick() {  
+                        this.handler(this.id);
+                    }, 
+                },
+                {
+                    id: this.props.data.id,
+                    // tslint:disable-next-line:object-literal-sort-keys
+                    handler: this.props.editorCaller,
+                    label: 'Delete', disabled: false, onClick() {
+                        // TODO: выводить предупреждающее окно
+                        DataProvider.deleteManufacturer(this.id);
+                    }, 
+                },
                 {label: 'Sort by', submenu: [
                     [
                         {label: 'Name', onClick() { /** impl */ }},
@@ -65,11 +71,11 @@ export class ListTableRow extends React.Component<any, any> {
             ]
         ];
 
-        const handle = ContextMenu.showMenu(data);
+        const handle = ContextMenu.showMenu(menuData);
 
     }
 
-    render() {
+    public render() {
        return (
             <tr className="d-flex" id={this.props.data.id} onContextMenu={this.handleOnContextMenu}>
                 <td className="col-1">{this.props.data.id}</td>
@@ -80,48 +86,37 @@ export class ListTableRow extends React.Component<any, any> {
     }
  }
 
+/*
+state:
+     
+*/
+// tslint:disable-next-line:max-classes-per-file
 export class ManufacturerList extends React.Component<any, any> {
     constructor(props: any){
         super(props);
-        this.state =  {
-            data: 
-            [
-               {
-                  "id":1,
-                  "manufacturer":"BMW",
-                  "country":"Germany"
-               },
-               {
-                  "id":2,
-                  "manufacturer":"FORD",
-                  "country":"USA"
-               },
-               {
-                  "id":3,
-                  "manufacturer":"Jaguar",
-                  "country":"UK"
-               }
-            ]
-         }
+    
+        this.state = {
+            data: DataProvider.getAllManufacturers()
+        };
+        
        console.log(props);       
     }
 
      /*
-    componentDidUpdate - вызывается сразу после render. Не вызывается в момент первого render'а компонента.
+    componentDidUpdate - вызывается сразу после render. 
+    Один раз в момент первого render'а компонента.
     */
-    componentDidMount() {
-        // cast to HTMLElement 
-       var htmlElem  = (document.getElementById('mufacturers_list_table') as  HTMLElement);
+    public componentDidMount() {
+       // cast to HTMLElement 
+       const htmlElem  = (document.getElementById('mufacturers_list_table') as  HTMLElement);
    
        ContextMenu.init(htmlElem);
     }  
 
 
-    render() {
-        console.log("from ManufacturerList render: ");
-        console.log(this.state);
+    public render() {
         return (
-            <div className="container" style={this.state.displayListstyle}>                
+            <div className="container" style={this.props.style}>                
                 <ListNavmenu/>
                 <table id="mufacturers_list_table" className="table">
                     <thead>
@@ -133,13 +128,13 @@ export class ManufacturerList extends React.Component<any, any> {
                     </thead>
                     <tbody>                     
                             {this.state.data.map(
-                                (manufacturer: any, i: number) => <ListTableRow key = {i} data = {manufacturer} />)}                      
+                                (manufacturer: any, i: number) => 
+                                    <ListTableRow key = {i} data = {manufacturer} 
+                                          editorCaller={this.props.toggleEditor}/>)}                      
                     </tbody>
-                </table>
-                
+                </table>    
 
-                <div>
-                </div>
+               
             </div>
           
         )
