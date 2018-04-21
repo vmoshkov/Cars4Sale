@@ -7,6 +7,8 @@ import {DataProvider} from './DataProvider';
 import { Jumbo } from "./Jumbo";
 import { ManufacturerEditor } from "./ManufacturerEditor";
 import { ManufacturerList } from "./ManufacturerList";
+//import { ManufacturerEditor } from "./ManufacturerEditor";
+import { CarsList } from "./CarsList";
 
 
 /*
@@ -31,12 +33,14 @@ export class MainPage extends React.Component<any, any> {
             manufacturersEditorOn: false,
             carsListOn: false,
             carsEditorOn: false,
-            manufacturer_id: ''
+            manufacturer_id: '',
+            cars_id: ''
         };
     
         // This binding is necessary to make `this` work in the callback
-        this.handleClick = this.handleClick.bind(this);
+        this.toggleManufacturersList = this.toggleManufacturersList.bind(this);
         this.toggleManufacturerEditor = this.toggleManufacturerEditor.bind(this);
+        this.toggleCarsList = this.toggleCarsList.bind(this);
     }
 
     public toggleManufacturerEditor(manufacturerID: any): void {
@@ -73,25 +77,49 @@ export class MainPage extends React.Component<any, any> {
 
     }
     
-    public handleClick(e: React.MouseEvent<HTMLAnchorElement>): void {
+    public toggleManufacturersList(e: React.MouseEvent<HTMLAnchorElement>): void {
         e.preventDefault();
-        console.log('The link 1 was clicked.' + this.state.isToggleOn);
+        console.log('toggleManufacturersList');
 
-        if(this.state.isToggleOn) {
-            this.setState ({isToggleOn: false});
-        }
-        else {
-            this.setState ({isToggleOn: true});
-        }
-      }
+        this.setState ({stateNumber: 1});
+        this.setState ({
+            manufacturersListOn: true, 
+            manufacturersEditorOn: false,
+            carsListOn: false,
+            carsEditorOn: false,
+        });
+        
+    }
+
+    public toggleCarsList(e: React.MouseEvent<HTMLAnchorElement>): void {
+        e.preventDefault();
+        console.log('toggleCarsList');
+
+        this.setState ({stateNumber: 3});
+        this.setState ({
+            manufacturersListOn: false, 
+            manufacturersEditorOn: false,
+            carsListOn: true,
+            carsEditorOn: false,
+        });
+        
+    }
 
     public render() {
-        const showList = {
+        const showManufacturersList = {
             'display': this.state.manufacturersListOn ? 'block' : 'none'
         };
 
-        const showEditor = {
+        const showManufacturersEditor = {
             'display': this.state.manufacturersEditorOn ? 'block' : 'none'
+        };
+
+        const showCarsList = {
+            'display': this.state.carsListOn ? 'block' : 'none'
+        };
+
+        const showCarsEditor = {
+            'display': this.state.carsEditorOn ? 'block' : 'none'
         };
 
         return (
@@ -102,24 +130,25 @@ export class MainPage extends React.Component<any, any> {
                         <div className="col-sm-2 bg-light">
                             <ul className="nav flex-column">
                                 <li className="nav-item">
-                                <a className="nav-link" href="#" onClick={this.handleClick}>Link 1</a>
+                                <a className="nav-link" href="#" onClick={this.toggleManufacturersList}>Manufacturers</a>
                                 </li>
                                 <li className="nav-item">
-                                <a className="nav-link" href="#">Link 2</a>
-                                </li>    
-                                <li className="nav-item">
-                                <a className="nav-link disabled" href="#">Disabled</a>
-                                </li>
+                                <a className="nav-link" href="#" onClick={this.toggleCarsList}>Cars for sale</a>
+                                </li>                                   
                             </ul>                       
                         </div>
                         <div className="col-sm-10" id='list_editor_container'>
-                            <ManufacturerList style={showList} 
+                            <ManufacturerList style={showManufacturersList} 
                                     toggleEditor={this.toggleManufacturerEditor}/>
                             
-                            <ManufacturerEditor style={showEditor} 
+                            <ManufacturerEditor style={showManufacturersEditor} 
                                     object_id={this.state.manufacturer_id}
                                     manufacturer={DataProvider.getManufacturer(this.state.manufacturer_id)}
-                                    toggleEditor={this.toggleManufacturerEditor} />                            
+                                    toggleEditor={this.toggleManufacturerEditor} /> 
+
+                            <CarsList style={showCarsList} 
+                                    />                            
+                                                     
 
                         </div>
                 </div>

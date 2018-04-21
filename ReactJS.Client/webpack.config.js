@@ -20,9 +20,12 @@ module.exports = {
    // mode: 'development',
     entry: {
         index: "./src/index.tsx",
-        app: "./src/App.tsx",
+        mainpage: "./src/components/MainPage.tsx",
         dataProvider: "./src/components/DataProvider.tsx",
+        DeletionWarnMessager: "./src/components/DeletionWarnMessager.tsx",
         ManufacturerEditor: "./src/components/ManufacturerEditor.tsx",
+        ManufacturerList: "./src/components/ManufacturerList.tsx",
+        CarsList: "./src/components/CarsList.tsx",
     },
 
     output: {
