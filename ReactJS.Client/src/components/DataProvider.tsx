@@ -122,6 +122,7 @@ export class DataProvider {
         console.log ("delete car with id = " + objectId);
     }
 
+   
     private static randomString(length: number): string {
         let text = "";
         const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -131,6 +132,8 @@ export class DataProvider {
         return text;
     }
 
+    
+    
 
 
     

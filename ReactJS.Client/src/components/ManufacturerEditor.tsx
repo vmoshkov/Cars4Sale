@@ -96,25 +96,42 @@ export class ManufacturerEditor extends React.Component<any, any> {
 
     public render() { 
        return  (
-            <div className='container' style={this.props.style}>
-                <table>
-                    <tr>
-                        <label>id:</label><label>{this.props.object_id}</label>
-                    </tr>
-                    <tr>
-                        <label>Manufacturer:  </label>
-                        <input type="text" id="manufacturer" required={true} 
-                            value={this.state.manufacturer.name} onChange={this.handleChangeManufacturer}/> 
-                    </tr>
-                    <tr>
-                        <label>Country:</label>
-                        <input type="text" id="country" required={true} 
-                            value={this.state.manufacturer.country} onChange={this.handleChangeCountry}/>
-                    </tr>
-                </table>
-                <hr/>
-                <button onClick={this.handleSave}>Сохранить</button>
-                <button onClick={this.handleCancel}>Отменить</button>
+            <div className='container pt-card pt-elevation-3' style={this.props.style}>               
+                     <table>  
+                        <tr>
+                            <td className="w-20 text-left">
+                                <label>ID: </label>
+                            </td>
+                            <td className="text-left">
+                            <input type="text" required={true}  className="pt-input pt-disabled"
+                                value={this.state.manufacturer.object_id}/> 
+                            </td>
+                        </tr>                     
+                        <tr>
+                            <td className="w-20 text-left">
+                                <label>Manufacturer: </label>
+                            </td>
+                            <td className="text-left">
+                            <input type="text" id="manufacturer" required={true}  className="pt-input"
+                                value={this.state.manufacturer.name} onChange={this.handleChangeManufacturer}/> 
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="w-20 text-left">
+                                <label>Country: </label>
+                            </td>
+                            <td className="text-left">
+                            <input type="text" id="country" required={true} className="pt-input"
+                                value={this.state.manufacturer.country} onChange={this.handleChangeCountry}/>
+                            </td>
+                        </tr>
+                    </table>
+                    <hr/>
+                    <div className="text-right">
+                        <button type="button" className="pt-button pt-intent-success" onClick={this.handleSave}>Save</button>
+                        <button type="button" className="pt-button" onClick={this.handleCancel}>Cancel</button>
+                    </div>
+               
             </div>
         )
     }

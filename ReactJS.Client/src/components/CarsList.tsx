@@ -1,89 +1,99 @@
 import * as React from "react";
 
-import ContextMenu from  'context-menu';
-import 'context-menu/lib/styles.css';
-import Popup from "reactjs-popup";
-import EventEmitter from 'tiny-emitter';
+import { ContextMenuTarget, Menu, MenuItem } from "@blueprintjs/core";
+import "@blueprintjs/core/lib/css/blueprint.css";
+import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+
 import {DataProvider} from './DataProvider';
-import {DeletionWarnMessager} from './DeletionWarnMessager';
+import {DeletionAlert} from './DeletionAlert';
 
-const emitter: EventEmitter = new EventEmitter();
- 
-
-export class CarsListNavmenu extends React.Component<any, any> {
-
-    public render() {
-        return (     
-                <nav className="navbar navbar-expand-lg navbar-light bg-light">
-                     <a className="navbar-brand" href="#">
-                         <img src="img/symbol_add.png" width="30" height="30" alt="Add new cars for sale"/>
-                    </a>              
-                </nav>    
-               
-            );
-    }
-
-}
-
+// tslint:disable-next-line:max-classes-per-file
+@ContextMenuTarget
 export class CarsListTableRow extends React.Component<any, any> {
     
     constructor(props: any){
         super(props);
 
+        this.state = {
+            picture: ""
+        }
         // This binding is necessary to make `this` work in the callback
-       this.handleOnContextMenu = this.handleOnContextMenu.bind(this);       
+       this.handleDelete = this.handleDelete.bind(this); 
+       this.handleEdit = this.handleEdit.bind(this);
+       this.handleCreate = this.handleCreate.bind(this);       
        
     }
-   
-    public handleOnContextMenu(e: React.MouseEvent<HTMLTableRowElement>): void {
-        e.preventDefault();        
-               
-        // menu data
-        const menuData: any = [
-            [
-                {
-                    id: this.props.data.id,
-                    // tslint:disable-next-line:object-literal-sort-keys
-                    handler: this.props.editorCaller,
-                    label: 'Create new', 
-                    onClick() { 
-                        this.handler('new');                  
-                    }, 
-                },
-                {
-                    id: this.props.data.id,
-                    // tslint:disable-next-line:object-literal-sort-keys
-                    handler: this.props.editorCaller,
-                    label: 'Edit', 
-                    onClick() {  
-                        this.handler(this.id);
-                    }, 
-                },
-                {
-                    id: this.props.data.id,
-                    // tslint:disable-next-line:object-literal-sort-keys
-                    handler: this.props.editorCaller,
-                    label: 'Delete', 
-                    disabled: false, 
-                    onClick() {
-                        emitter.emit('accept-delete-car', this.id);                        
-                    }, 
-                }            ]
-        ];
 
-        const handle = ContextMenu.showMenu(menuData);
+    public handleCreate(e: React.MouseEvent<HTMLElement>): void {
+        console.log ("handle create called ");     
+        this.props.editorCaller('new');     
+     }
+
+    public handleEdit(e: React.MouseEvent<HTMLElement>): void {
+       console.log ("handle edit called with param " + this.props.data.id);  
+       this.props.editorCaller(this.props.data.id);     
     }
+     
+    public handleDelete(): void {
+        this.props.deletionConfirmation(this.props.data.id);
+    }
+
+    // Если поменялись свойства, значит надо перегрузить данные в редактор
+    public componentWillReceiveProps(nextProps: any) {
+
+        let that: CarsListTableRow = this;
+
+        fetch("img/no_image.png")
+            .then((resp) => {return resp.blob()}) // Transform the data into json
+            // tslint:disable-next-line:only-arrow-functions
+            .then(function (blob_data) {
+                   let promise = new Promise(function(resolve, reject) {
+                        const fileReader = new FileReader(); 
+                        fileReader.onload = () => {
+                            resolve(fileReader.result );
+                        }
+                        fileReader.readAsDataURL(blob_data);
+                    })
+
+                    return promise;           
+                })
+            .then(function (result) { 
+                that.setState({
+                    picture: result,
+                })
+                
+            })
+            // tslint:disable-next-line:only-arrow-functions
+            .catch(function(error: any) {
+                console.error(error);
+            }); 
+
+       
+    }
+
+    public renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return (
+            <Menu>
+                <MenuItem onClick={this.handleCreate} text="Create New" />
+                <MenuItem onClick={this.handleEdit} text="Edit" />
+                <MenuItem onClick={this.handleDelete} text="Delete" />
+            </Menu>
+        );
+    }
+ 
 
     public render() {
        return (
-            <tr className="d-flex" id={this.props.data.id} onContextMenu={this.handleOnContextMenu}>
+            <tr className="d-flex" id={this.props.data.id}>
                 <td className="col-1">{this.props.data.id}</td>
                 <td className="col-2">{this.props.data.manufacturer}</td>
-                <td className="col-2">{this.props.data.model}</td>                
+                <td className="col-1">{this.props.data.model}</td>                
                 <td className="col-1">{this.props.data.prise}</td>
-                <td className="col-3">{this.props.data.contact_person}</td>
-                <td className="col-3">{this.props.data.contact_phone}</td>
-                <td className="col-3">{this.props.data.image}</td>
+                <td className="col-2">{this.props.data.contact_person}</td>
+                <td className="col-2">{this.props.data.contact_phone}</td>
+                <td className="col-4">
+                   <img  height="50" width="50" src={this.state.picture} /></td>
             </tr>
        );
     }
@@ -98,61 +108,61 @@ export class CarsList extends React.Component<any, any> {
     
         this.state = {
             data: DataProvider.getAllCars(),
+            object2deleteId: "",
             onWarninPopup: false,
-            object2deleteId: ""
+            
         };
-        
-       console.log(props);       
+          
+        this.deletionConfirmation = this.deletionConfirmation.bind(this); 
     }
 
-     /*
-    componentDidUpdate - вызывается сразу после render. 
-    Один раз в момент первого render'а компонента.
-    */
-    public componentDidMount() {
-       // cast to HTMLElement 
-       const htmlElem  = (document.getElementById('cars_list_table') as  HTMLElement);
-   
-       ContextMenu.init(htmlElem);
-
-       // Регистрирую обработчик события подтверждения удаления по контекстному меню
-       emitter.on('accept-delete-car', (objectId:string) => {
-            console.log("Are you sure you want to delete a car with id " + objectId);
-            this.setState(
-                    {
-                        onWarninPopup: !this.state.onWarninPopup, // reverse value
-                        object2deleteId: objectId
-                    }
-            );                      
-       });
-    }  
-
+    public deletionConfirmation(objectID: string): void {
+        console.log("Are you sure you want to delete car with id " + objectID);
+        
+        this.setState (
+            {
+                object2deleteId: objectID,
+                onWarninPopup: !this.state.onWarninPopup // reverse value
+            }
+        );
+    }
 
     public render() {
         return (
             <div className="container" style={this.props.style}>                
-                <CarsListNavmenu/>
+                <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                     <a className="navbar-brand" href="#">
+                         <img src="img/symbol_add.png" width="30" height="30" 
+                         alt="Add new cars for sale"
+                         // tslint:disable-next-line:jsx-no-lambda
+                         onClick={ () => {
+                             this.props.toggleEditor("new");
+                            }
+                         }/>
+                    </a>              
+                </nav> 
                 <table id="cars_list_table" className="table">
                     <thead>
                         <tr className="d-flex">
                             <th className="col-1">id</th>
-                            <td className="col-2">Manufacturer</td>
-                            <td className="col-2">Model</td>
-                            <td className="col-1">Prise</td>
-                            <td className="col-3">Contact person</td>
-                            <td className="col-3">Phone</td>
-                            <td className="col-3">Picture</td>                         
+                            <th className="col-2">Manufacturer</th>
+                            <th className="col-1">Model</th>
+                            <th className="col-1">Prise</th>
+                            <th className="col-2">Contact person</th>
+                            <th className="col-2">Phone</th>
+                            <th className="col-4">Picture</th>                         
                         </tr>
                     </thead>
                     <tbody>                     
                         {this.state.data.map(
                             (singleCar: any, i: number) => 
                                 <CarsListTableRow key = {i} data = {singleCar} 
-                                   editorCaller={this.props.toggleEditor}/>)}    
-                        <DeletionWarnMessager 
+                                   editorCaller={this.props.toggleEditor}
+                                   deletionConfirmation={this.deletionConfirmation}/>)}   
+                        <DeletionAlert
                             objectId2delete={this.state.object2deleteId} 
-                            type={DeletionWarnMessager.TypeCar}
-                            onWarninPopup={this.state.onWarninPopup}/>                       
+                            type={DeletionAlert.TypeCar}
+                            onWarninPopup={this.state.onWarninPopup}/>                                            
                     </tbody>
                 </table>    
 

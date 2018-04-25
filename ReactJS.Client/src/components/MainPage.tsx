@@ -1,13 +1,16 @@
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
 
+import "@blueprintjs/core/lib/css/blueprint.css";
+import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import {DataProvider} from './DataProvider';
+
+import { DataProvider } from './DataProvider';
 import { Jumbo } from "./Jumbo";
 import { ManufacturerEditor } from "./ManufacturerEditor";
 import { ManufacturerList } from "./ManufacturerList";
-//import { ManufacturerEditor } from "./ManufacturerEditor";
+import { CarsEditor } from "./CarsEditor";
 import { CarsList } from "./CarsList";
 
 
@@ -41,6 +44,7 @@ export class MainPage extends React.Component<any, any> {
         this.toggleManufacturersList = this.toggleManufacturersList.bind(this);
         this.toggleManufacturerEditor = this.toggleManufacturerEditor.bind(this);
         this.toggleCarsList = this.toggleCarsList.bind(this);
+        this.toggleCarsEditor = this.toggleCarsEditor.bind(this);
     }
 
     public toggleManufacturerEditor(manufacturerID: any): void {
@@ -57,15 +61,13 @@ export class MainPage extends React.Component<any, any> {
        }
        // Если редактор мануфактуреров включен и лист выключен
        else if (this.state.stateNumber === 2) {
-           console.log(this.state);
             this.setState ({stateNumber: 1});
             this.setState ({manufacturersListOn: true});
             this.setState ({manufacturersEditorOn: false});
            
        }
        // Если 
-       else if (this.state.stateNumber === 3) {
-            console.log(this.state);
+       else if (this.state.stateNumber === 3) {           
             this.setState ({stateNumber: 4});
            
         }
@@ -78,8 +80,7 @@ export class MainPage extends React.Component<any, any> {
     }
     
     public toggleManufacturersList(e: React.MouseEvent<HTMLAnchorElement>): void {
-        e.preventDefault();
-        console.log('toggleManufacturersList');
+        e.preventDefault();      
 
         this.setState ({stateNumber: 1});
         this.setState ({
@@ -92,8 +93,7 @@ export class MainPage extends React.Component<any, any> {
     }
 
     public toggleCarsList(e: React.MouseEvent<HTMLAnchorElement>): void {
-        e.preventDefault();
-        console.log('toggleCarsList');
+        e.preventDefault();      
 
         this.setState ({stateNumber: 3});
         this.setState ({
@@ -102,6 +102,31 @@ export class MainPage extends React.Component<any, any> {
             carsListOn: true,
             carsEditorOn: false,
         });
+        
+    }
+
+    public toggleCarsEditor(carID: any): void {      
+        // Если редактор выключен и лист включен
+       if(this.state.stateNumber === 3)
+       {
+            this.setState ({stateNumber: 4});
+            this.setState ({
+                manufacturersListOn: false, 
+                manufacturersEditorOn: false,
+                carsListOn: false,
+                carsEditorOn: true,
+            });
+
+            // Так же тут надо установить параметры с которыми будем открывать редактор
+            this.setState ({car_id: carID});
+        }
+        // Если редактор включен и лист выключен
+       else if (this.state.stateNumber === 4) {
+            this.setState ({stateNumber: 3});
+            this.setState ({carsListOn: true});
+            this.setState ({carsEditorOn: false});
+        
+        }
         
     }
 
@@ -121,7 +146,7 @@ export class MainPage extends React.Component<any, any> {
         const showCarsEditor = {
             'display': this.state.carsEditorOn ? 'block' : 'none'
         };
-
+        
         return (
         <div className="container">
            <Jumbo/>
@@ -147,9 +172,12 @@ export class MainPage extends React.Component<any, any> {
                                     toggleEditor={this.toggleManufacturerEditor} /> 
 
                             <CarsList style={showCarsList} 
-                                    />                            
-                                                     
+                                    toggleEditor={this.toggleCarsEditor} />     
 
+                            <CarsEditor style={showCarsEditor} 
+                                        object_id={this.state.car_id}
+                                        toggleEditor={this.toggleCarsEditor} />                       
+                            
                         </div>
                 </div>
             </div>          

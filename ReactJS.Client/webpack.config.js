@@ -22,8 +22,9 @@ module.exports = {
         index: "./src/index.tsx",
         mainpage: "./src/components/MainPage.tsx",
         dataProvider: "./src/components/DataProvider.tsx",
-        DeletionWarnMessager: "./src/components/DeletionWarnMessager.tsx",
+        DeletionAlert: "./src/components/DeletionAlert.tsx",
         ManufacturerEditor: "./src/components/ManufacturerEditor.tsx",
+        CarsEditor: "./src/components/CarsEditor.tsx",
         ManufacturerList: "./src/components/ManufacturerList.tsx",
         CarsList: "./src/components/CarsList.tsx",
     },
@@ -61,7 +62,27 @@ module.exports = {
                 use: [
                     'file-loader'
                 ]
-            }
+            },
+            {
+                test: /\.(ttf|eot|svg)$/,
+                use: {
+                  loader: 'file-loader',
+                  options: {
+                    name: 'fonts/[hash].[ext]'
+                  }
+                }
+              },
+              {
+                test: /\.(woff|woff2)$/,
+                use: {
+                    loader: 'url-loader',
+                    options: {
+                        name: 'fonts/[hash].[ext]',
+                        limit: 5000,
+                        mimetype: 'application/font-woff'
+                    }
+                }
+              },
         ]
     },
 

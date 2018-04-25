@@ -1,83 +1,53 @@
 import * as React from "react";
 
-import ContextMenu from  'context-menu';
-import 'context-menu/lib/styles.css';
-import Popup from "reactjs-popup";
-import EventEmitter from 'tiny-emitter';
-import {DataProvider} from './DataProvider';
-import {DeletionWarnMessager} from './DeletionWarnMessager';
+import { ContextMenuTarget, Menu, MenuItem } from "@blueprintjs/core";
 
-const emitter: EventEmitter = new EventEmitter();
+import {DataProvider} from './DataProvider';
+import {DeletionAlert} from './DeletionAlert';
  
 
-export class ListNavmenu extends React.Component<any, any> {
-
-    public render() {
-        return (     
-                <nav className="navbar navbar-expand-lg navbar-light bg-light">
-                     <a className="navbar-brand" href="#">
-                         <img src="img/symbol_add.png" width="30" height="30" alt="Add new manufacturer"/>
-                    </a>              
-                </nav>    
-               
-            );
-    }
-
-}
-
 // tslint:disable-next-line:max-classes-per-file
+@ContextMenuTarget
 export class ListTableRow extends React.Component<any, any> {
     
     constructor(props: any){
         super(props);
 
-        // This binding is necessary to make `this` work in the callback
-       this.handleOnContextMenu = this.handleOnContextMenu.bind(this);       
+         // This binding is necessary to make `this` work in the callback
+         this.handleDelete = this.handleDelete.bind(this); 
+         this.handleEdit = this.handleEdit.bind(this);
+         this.handleCreate = this.handleCreate.bind(this);         
        
     }
    
-    public handleOnContextMenu(e: React.MouseEvent<HTMLTableRowElement>): void {
-        e.preventDefault();        
-               
-        // menu data
-        const menuData: any = [
-            [
-                {
-                    id: this.props.data.id,
-                    // tslint:disable-next-line:object-literal-sort-keys
-                    handler: this.props.editorCaller,
-                    label: 'Create new', 
-                    onClick() { 
-                        this.handler('new');                  
-                    }, 
-                },
-                {
-                    id: this.props.data.id,
-                    // tslint:disable-next-line:object-literal-sort-keys
-                    handler: this.props.editorCaller,
-                    label: 'Edit', 
-                    onClick() {  
-                        this.handler(this.id);
-                    }, 
-                },
-                {
-                    id: this.props.data.id,
-                    // tslint:disable-next-line:object-literal-sort-keys
-                    handler: this.props.editorCaller,
-                    label: 'Delete', 
-                    disabled: false, 
-                    onClick() {
-                        emitter.emit('accept-delete-manufacturer', this.id);                        
-                    }, 
-                }            ]
-        ];
+    public handleCreate(e: React.MouseEvent<HTMLElement>): void {
+        console.log ("handle create called ");  
+        this.props.editorCaller('new');     
+     }
 
-        const handle = ContextMenu.showMenu(menuData);
+    public handleEdit(e: React.MouseEvent<HTMLElement>): void {
+       console.log ("handle edit called with param " + this.props.data.id);
+       this.props.editorCaller(this.props.data.id);          
+    }
+     
+    public handleDelete(): void {
+        this.props.deletionConfirmation(this.props.data.id);
+    }
+
+    public renderContextMenu() {
+        // return a single element, or nothing to use default browser behavior
+        return (
+            <Menu>
+                <MenuItem onClick={this.handleCreate} text="Create New" />
+                <MenuItem onClick={this.handleEdit} text="Edit" />
+                <MenuItem onClick={this.handleDelete} text="Delete" />
+            </Menu>
+        );
     }
 
     public render() {
        return (
-            <tr className="d-flex" id={this.props.data.id} onContextMenu={this.handleOnContextMenu}>
+            <tr className="d-flex" id={this.props.data.id}>
                 <td className="col-1">{this.props.data.id}</td>
                 <td className="col-3">{this.props.data.manufacturer}</td>
                 <td className="col-3">{this.props.data.country}</td>
@@ -94,40 +64,39 @@ export class ManufacturerList extends React.Component<any, any> {
     
         this.state = {
             data: DataProvider.getAllManufacturers(),
-            onWarninPopup: false,
-            object2deleteId: ""
+            object2deleteId: "",
+            onWarninPopup: false           
         };
         
-       console.log(props);       
+        this.deletionConfirmation = this.deletionConfirmation.bind(this);              
     }
 
-     /*
-    componentDidUpdate - вызывается сразу после render. 
-    Один раз в момент первого render'а компонента.
-    */
-    public componentDidMount() {
-       // cast to HTMLElement 
-       const htmlElem  = (document.getElementById('mufacturers_list_table') as  HTMLElement);
-   
-       ContextMenu.init(htmlElem);
-
-       // Регистрирую обработчик события подтверждения удаления по контекстному меню
-       emitter.on('accept-delete-manufacturer', (objectId:string) => {
-            console.log("Are you sure you want to delete manufacturer with id " + objectId);
-            this.setState(
-                    {
-                        onWarninPopup: !this.state.onWarninPopup, // reverse value
-                        object2deleteId: objectId
-                    }
-            );                      
-       });
-    }  
+    public deletionConfirmation(objectID: string): void {
+        console.log("Are you sure you want to delete manufacturer with id " + objectID);
+        
+        this.setState (
+            {
+                object2deleteId: objectID,
+                onWarninPopup: !this.state.onWarninPopup // reverse value
+            }
+        );
+    } 
 
 
     public render() {
         return (
             <div className="container" style={this.props.style}>                
-                <ListNavmenu/>
+                 <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                     <a className="navbar-brand" href="#">
+                         <img src="img/symbol_add.png" width="30" height="30" 
+                         alt="Add new manufacturer"
+                         // tslint:disable-next-line:jsx-no-lambda
+                         onClick={ () => {
+                            this.props.toggleEditor("new");
+                           }
+                        }/>
+                    </a>              
+                </nav>    
                 <table id="mufacturers_list_table" className="table">
                     <thead>
                         <tr className="d-flex">
@@ -140,11 +109,12 @@ export class ManufacturerList extends React.Component<any, any> {
                         {this.state.data.map(
                             (manufacturer: any, i: number) => 
                                 <ListTableRow key = {i} data = {manufacturer} 
-                                   editorCaller={this.props.toggleEditor}/>)}    
-                        <DeletionWarnMessager 
+                                   editorCaller={this.props.toggleEditor}
+                                   deletionConfirmation={this.deletionConfirmation}/>)}    
+                        <DeletionAlert
                             objectId2delete={this.state.object2deleteId} 
-                            type={DeletionWarnMessager.TypeManufacturer}
-                            onWarninPopup={this.state.onWarninPopup}/>                       
+                            type={DeletionAlert.TypeManufacturer}
+                            onWarninPopup={this.state.onWarninPopup}/>                     
                     </tbody>
                 </table>    
 
