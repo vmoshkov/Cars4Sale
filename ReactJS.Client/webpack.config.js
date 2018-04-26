@@ -20,6 +20,7 @@ module.exports = {
    // mode: 'development',
     entry: {
         index: "./src/index.tsx",
+        header: "./src/components/Header.tsx",
         mainpage: "./src/components/MainPage.tsx",
         dataProvider: "./src/components/DataProvider.tsx",
         DeletionAlert: "./src/components/DeletionAlert.tsx",

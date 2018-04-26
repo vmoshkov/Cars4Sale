@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 import { DataProvider } from './DataProvider';
-import { Jumbo } from "./Jumbo";
+import { Header } from "./Header";
 import { ManufacturerEditor } from "./ManufacturerEditor";
 import { ManufacturerList } from "./ManufacturerList";
 import { CarsEditor } from "./CarsEditor";
@@ -148,11 +148,12 @@ export class MainPage extends React.Component<any, any> {
         };
         
         return (
+            
         <div className="container">
-           <Jumbo/>
+            <Header/>
            <div className="container-fluid">
                 <div className="row">
-                        <div className="col-sm-2 bg-light">
+                        <div className="col-2 bg-light">
                             <ul className="nav flex-column">
                                 <li className="nav-item">
                                 <a className="nav-link" href="#" onClick={this.toggleManufacturersList}>Manufacturers</a>
@@ -162,7 +163,7 @@ export class MainPage extends React.Component<any, any> {
                                 </li>                                   
                             </ul>                       
                         </div>
-                        <div className="col-sm-10" id='list_editor_container'>
+                        <div className="col-10" id='list_editor_container'>
                             <ManufacturerList style={showManufacturersList} 
                                     toggleEditor={this.toggleManufacturerEditor}/>
                             
