@@ -1,21 +1,11 @@
 import * as React from 'react';
+import {IManufacturer} from './Types';
 import {DataProvider} from './DataProvider';
 
 
-// В свойствах мы передаем id объекта(и признак, новый ли это объект)
-interface IProps {
-    object_id: string;
-    is_new: boolean;
-    style: string;
-  }
-
-  /*
-interface Manufacturer {
-    object_id: string;
-    name: string;
-    country: string;
-}
-*/
+type TManufacturerEditorState = {
+    manufacturer: IManufacturer
+};
 
 /*
 Он должен
@@ -23,7 +13,7 @@ interface Manufacturer {
 б) понимать если это новый объект
 в) поле id должно быть не редактируемое
 */
-export class ManufacturerEditor extends React.Component<any, any> {
+export class ManufacturerEditor extends React.Component<any, TManufacturerEditorState> {
     constructor (props: any) {
         super(props);  
 
@@ -31,9 +21,9 @@ export class ManufacturerEditor extends React.Component<any, any> {
         
         this.state = {
             manufacturer: {
-                object_id: this.props.object_id, 
+                objectId: this.props.object_id, 
                 // tslint:disable-next-line:object-literal-sort-keys
-                name: this.props.manufacturer.name, 
+                manufacturer: this.props.manufacturer.name, 
                 country: this.props.manufacturer.country
             }           
         };
@@ -48,45 +38,42 @@ export class ManufacturerEditor extends React.Component<any, any> {
     public componentWillReceiveProps(nextProps: any) {
        this.setState({
             manufacturer: {
-                object_id: nextProps.manufacturer.object_id, 
+                objectId: nextProps.object_id, 
                 // tslint:disable-next-line:object-literal-sort-keys
-                name: nextProps.manufacturer.object_id==='new' ? '' : nextProps.manufacturer.name, 
-                country: nextProps.manufacturer.object_id==='new' ? '' : nextProps.manufacturer.country
+                manufacturer: nextProps.object_id==='new' ? '' : nextProps.manufacturer.manufacturer, 
+                country: nextProps.object_id==='new' ? '' : nextProps.manufacturer.country
             }}            
         );
     }
    
     public handleChangeManufacturer = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({manufacturer: {name: e.target.value}});
+        let newState: IManufacturer = this.state.manufacturer;
+        newState.manufacturer = e.target.value;        
+        this.setState({manufacturer: newState});
       }
 
     public handleChangeCountry = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({manufacturer: {country: e.target.value}});
+        let newState: IManufacturer = this.state.manufacturer;
+        newState.country = e.target.value;  
+        this.setState({manufacturer: newState});
       }
 
-    // Обработчик сохранения
+    // Save handler
     public handleSave = (e: any) => {
-        DataProvider.saveManufacturer (this.state);
+        let newManu: IManufacturer = 
+            DataProvider.saveManufacturer (this.state.manufacturer);
 
-       // очищаю состояние         
-       this.setState({manufacturer : {
-                object_id: '', 
-                // tslint:disable-next-line:object-literal-sort-keys
-                name: '', 
-                country: '' 
-        }});
-
-        // Затем вызываю обработчик из родителя чтобы переключить состояние
-        this.props.toggleEditor("back to list");
+       // update state        
+       this.setState({manufacturer : newManu});
     }
 
     // Обработчик отмены
     public handleCancel = (e: any) => {
         // очищаю состояние         
          this.setState({manufacturer : {
-            object_id: '', 
+            objectId: '', 
             // tslint:disable-next-line:object-literal-sort-keys
-            name: '', 
+            manufacturer: '', 
             country: ''
         }});
 
@@ -104,7 +91,7 @@ export class ManufacturerEditor extends React.Component<any, any> {
                             </td>
                             <td className="text-left">
                             <input type="text" required={true}  className="pt-input pt-disabled"
-                                value={this.state.manufacturer.object_id}/> 
+                                value={this.state.manufacturer.objectId}/> 
                             </td>
                         </tr>                     
                         <tr>
@@ -113,7 +100,7 @@ export class ManufacturerEditor extends React.Component<any, any> {
                             </td>
                             <td className="text-left">
                             <input type="text" id="manufacturer" required={true}  className="pt-input"
-                                value={this.state.manufacturer.name} onChange={this.handleChangeManufacturer}/> 
+                                value={this.state.manufacturer.manufacturer} onChange={this.handleChangeManufacturer}/> 
                             </td>
                         </tr>
                         <tr>
@@ -129,7 +116,7 @@ export class ManufacturerEditor extends React.Component<any, any> {
                     <hr/>
                     <div className="text-right">
                         <button type="button" className="pt-button pt-intent-success" onClick={this.handleSave}>Save</button>
-                        <button type="button" className="pt-button" onClick={this.handleCancel}>Cancel</button>
+                        <button type="button" className="pt-button" onClick={this.handleCancel}>Close</button>
                     </div>
                
             </div>

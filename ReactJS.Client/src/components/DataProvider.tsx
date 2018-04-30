@@ -1,93 +1,121 @@
+import {IManufacturer, IImage, ICar} from './Types';
+
 export class DataProvider {
 
-    private static readonly data: any =
+    private static readonly data: IManufacturer[] =
     [
        {
-          "id":1,
+          "objectId":"1",
           "manufacturer":"BMW",
           // tslint:disable-next-line:object-literal-sort-keys
           "country":"Germany"
        },
        {
-          "id":2,
+          "objectId": "2",
           "manufacturer":"FORD",
           // tslint:disable-next-line:object-literal-sort-keys
           "country":"USA"
        },
        {
-          "id":3,
+          "objectId":"3",
           "manufacturer":"Jaguar",
           // tslint:disable-next-line:object-literal-sort-keys
           "country":"UK"
        }
     ]
 
-    private static readonly cars_data: any =
+    private static readonly cars_data: ICar[] =
     [
         {
-            id: 101,
-            entry_date: new Date(),
-            manufacturer: "Jaguar",
+            objectId: "101",
+            item_date: new Date(),
+            manufacturer:  {
+                "objectId":"3",
+                "manufacturer":"Jaguar",
+                // tslint:disable-next-line:object-literal-sort-keys
+                "country":"UK"
+             },
             model: "PACE-X",
-            car_year: 2015,
+            car_year: "2015",
             description: "I love it. But it's time to buy a new one",
-            prise: "23.000",
+            car_prise: "23.000",
             contact_person: "John Willsmith",
-            contact_phone: "+44 205 88 22 43"
+            contact_phone: "+44 205 88 22 43",
+            images: []
         },
         {
-            id: 102,
-            entry_date: new Date(),
-            manufacturer: "BMW",
+            objectId: "102",
+            item_date: new Date(),
+            manufacturer:  {
+                "objectId":"1",
+                "manufacturer":"BMW",
+                // tslint:disable-next-line:object-literal-sort-keys
+                "country":"Germany"
+             },
             model: "545",
-            car_year: 2011,
+            car_year: "2011",
             description: "Good, old but still powerfull car for someone who cares about prestige",
-            prise: "19.000",
+            car_prise: "19.000",
             contact_person: "Rayan O'Deniels",
-            contact_phone: "+44 205 55 11 90"
+            contact_phone: "+44 205 55 11 90",
+            images: []
         },
+
         {
-            id: 103,
-            entry_date: new Date(),
-            manufacturer: "Jaguar",
+            objectId: "103",
+            item_date: new Date(),
+            manufacturer:  {
+                "objectId":"3",
+                "manufacturer":"Jaguar",
+                // tslint:disable-next-line:object-literal-sort-keys
+                "country":"UK"
+             },
             model: "FX",
-            car_year: 2017,
+            car_year: "2017",
             description: "Doesn't fit to my perceptions. Just want to get rid of it. Very advantagous price for you. Please call.",
-            prise: "49.999",
+            car_prise: "49.999",
             contact_person: "Deborah Fitzgarret",
-            contact_phone: "+44 112 000 36 81"
+            contact_phone: "+44 112 000 36 81",
+            images: []
         },
         {
-            id: 104,
-            entry_date: new Date(),
-            manufacturer: "FORD",
+            objectId: "104",
+            item_date: new Date(),
+            manufacturer: {
+                "objectId": "2",
+                "manufacturer":"FORD",
+                // tslint:disable-next-line:object-literal-sort-keys
+                "country":"USA"
+             },
             model: "Focus",
-            car_year: 2015,
+            car_year: "2015",
             description: "Vihicle for daily usage.",
-            prise: "12.500",
+            car_prise: "12.500",
             contact_person: "Alex McAlberg",
-            contact_phone: "+44 101 300 22 17"
+            contact_phone: "+44 101 300 22 17",
+            images: []
         }
+        
     ]
 
     // tslint:disable-next-line:member-ordering
-    public static getManufacturer(objectId: string): any {
+    public static getManufacturer(objId: string): IManufacturer {
 
         // tslint:disable-next-line:prefer-const
-        let newManufacturer: any = {
-            object_id: objectId, 
+        let newManufacturer: IManufacturer = {
+            objectId: objId, 
             // tslint:disable-next-line:object-literal-sort-keys
-            name: 'cannot load object', 
+            manufacturer: "cannot load object", 
             country: 'cannot load object'
          }
 
          for (const element of DataProvider.data) {
-            const elemId: number = parseInt(element.id,0);
-            const objID: number = parseInt(objectId,0);
+            const elemId: number = parseInt(element.objectId,0);
+            const objID: number = parseInt(objId,0);
            
             if (elemId===objID) {
-                newManufacturer.id = element.id;
-                newManufacturer.name = element.manufacturer;
+                newManufacturer.objectId = element.objectId;
+                newManufacturer.manufacturer = element.manufacturer;
                 newManufacturer.country = element.country;
                 break;
             }
@@ -96,21 +124,79 @@ export class DataProvider {
         return newManufacturer;
     }
 
+    public static getCar(objId: string): ICar {
+
+        let newCar: ICar = {
+            objectId: objId,
+            item_date: new Date(),
+            manufacturer: {
+                "objectId":"0",
+                "manufacturer":"",
+                "country":""
+             },
+            model: "cannot load object",
+            car_year: "cannot load object",
+            description: "cannot load object",
+            car_prise: "cannot load object",
+            contact_person: "cannot load object",
+            contact_phone: "cannot load object",
+            images: []
+        }
+
+        if (objId==='new')
+        {
+            newCar.model='',
+            newCar.car_year = "",
+            newCar.description = "",
+            newCar.car_prise = "0",
+            newCar.contact_person = "",
+            newCar.contact_phone = ""
+
+            return newCar;
+        }
+
+        for (const element of DataProvider.cars_data) {
+            const elemId: number = parseInt(element.objectId,0);
+            const objID: number = parseInt(objId,0);
+           
+            if (elemId===objID) {
+                return element;              
+            }
+         }  
+
+        return newCar;
+    }
+
     // tslint:disable-next-line:member-ordering
-    public static getAllManufacturers() {
+    public static getAllManufacturers(): IManufacturer[] {
         return DataProvider.data;
     }
 
     // tslint:disable-next-line:member-ordering
-    public static getAllCars() {
+    public static getAllCars(): ICar[] {
         return DataProvider.cars_data;
     }
 
     // tslint:disable-next-line:member-ordering
-    public static saveManufacturer(manufacturer: any): void {
-        let b = manufacturer;
-        console.log (manufacturer);
-        b = b;
+    public static saveManufacturer(manufacturer: IManufacturer): IManufacturer {
+        let manuObject: string = JSON.stringify(manufacturer);
+        console.log (manuObject);
+        if(manufacturer.objectId==="new") {
+            manufacturer.objectId = Math.random().toString();
+        }
+
+        return manufacturer;
+    }
+
+     // tslint:disable-next-line:member-ordering
+     public static saveCar(car: ICar): ICar {
+        let carObject: string = JSON.stringify(car);
+        console.log (carObject);
+        if(car.objectId==="new") {
+            car.objectId = Math.random().toString();
+        }
+
+        return car;
     }
 
     // tslint:disable-next-line:member-ordering

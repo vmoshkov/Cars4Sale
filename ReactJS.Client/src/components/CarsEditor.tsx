@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import { FileInput, Intent, TextArea } from "@blueprintjs/core";
+import { IImage, ICar } from './Types';
+import { Alert, FileInput, Intent, TextArea,  IToaster,  Position, Toaster  } from "@blueprintjs/core";
 import { Classes, DateInput } from "@blueprintjs/datetime";
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 
@@ -8,24 +9,19 @@ import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 import  {DataProvider} from './DataProvider';
+import { ICON_LARGE } from '@blueprintjs/core/lib/esm/common/classes';
 
+type TCarEditorState = {
+    car: ICar
+};
 
-export class CarsEditor extends React.Component<any, any> {
+export class CarsEditor extends React.Component<any, TCarEditorState> {
     constructor (props: any) {
        super(props);  
+       let newCar: ICar = DataProvider.getCar(props.object_id);
+               
        this.state = {
-            car: {
-                car_id: this.props.object_id,     
-                images: [],
-                item_date: null,
-                car_prise: 0,
-                contact_person: '',
-                contact_phone: '',
-                car_model: '',
-                car_desc: '',
-                car_year: 0,
-                car_manufacturer: ''
-            }           
+            car: newCar       
         };
 
         this.handleSave = this.handleSave.bind(this);
@@ -33,44 +29,62 @@ export class CarsEditor extends React.Component<any, any> {
 
         this.handleDateChange = this.handleDateChange.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
-
+        this.handleChangeContactPerson = this.handleChangeContactPerson.bind(this);
+        this.handleChangeContactNumber = this.handleChangeContactNumber.bind(this);
+        this.handleChangeDescription = this.handleChangeDescription.bind(this);
+        this.handleChangeModel = this.handleChangeModel.bind(this);
+        this.handleChangeYear = this.handleChangeYear.bind(this);
+        this.handleChangeManufacturer = this.handleChangeManufacturer.bind(this);
+        this.handleChangePrise = this.handleChangePrise.bind(this);
     }
 
     // Если поменялись свойства, значит надо перегрузить данные в редактор
     public componentWillReceiveProps(nextProps: any) {
-        this.setState({
-             car: {
-                car_id: nextProps.object_id, 
-                images: [],
-                item_date: null,
-                car_prise: 0,
-                contact_person: '',
-                contact_phone: '',
-                car_model: '',
-                car_desc: '',
-                car_year: 0,
-                car_manufacturer: ''                 
-            }}            
-         );
+        let newCar: ICar = DataProvider.getCar(nextProps.object_id);
+        
+        this.setState({car: newCar});
      }
 
-     // Обработчик сохранения
+     // Save handler
     public handleSave = (e: any) => {
-        // очищаю состояние         
-       this.setState({car : {
-            car_id: '',               
-        }});
+        const AppToaster = Toaster.create({
+            position: Position.TOP_RIGHT            
+        });
 
-        // Затем вызываю обработчик из родителя чтобы переключить состояние
-        this.props.toggleEditor("back to list");
+        if (this.state.car.manufacturer===null) {
+            AppToaster.show({ 
+                icon: "hand", 
+                intent: Intent.DANGER, 
+                message: "Please specify manufacturer!",
+                timeout: 2000 });
+
+            return;
+        }
+
+        let newCar = 
+            DataProvider.saveCar(this.state.car);
+
+       // update state      
+       this.setState({car : newCar});
+
     }
 
     // Обработчик отмены
     public handleCancel = (e: any) => {
+        let emptyCar: ICar = {
+            objectId: '',
+            item_date: new Date(),
+            manufacturer: null,
+            model: "",
+            car_year: "",
+            description: "",
+            car_prise: "",
+            contact_person: "",
+            contact_phone: "",
+            images: []
+        }
         // очищаю состояние         
-         this.setState({car : {
-            car_id: '',          
-        }});
+         this.setState({car: emptyCar});
 
         // Затем вызываю обработчик из родителя чтобы переключить состояние
         this.props.toggleEditor("back to list from cancel");
@@ -105,14 +119,13 @@ export class CarsEditor extends React.Component<any, any> {
             promise.then(function (result) { 
                 let imageList = that.state.car.images;
 
-                imageList.push(
+                imageList.unshift(
                     {
                         filename: file.name,
                         data: result,
                         blob: file
                     }
                 );
-
                 let updatedCar = that.state.car;
 
                 updatedCar.images = imageList;
@@ -120,8 +133,7 @@ export class CarsEditor extends React.Component<any, any> {
                 that.setState({
                     car : updatedCar
                 });
-
-                console.log(that.state.car.images);
+             
                 
             })
             // tslint:disable-next-line:only-arrow-functions
@@ -129,9 +141,52 @@ export class CarsEditor extends React.Component<any, any> {
                 console.error(error);
             }); 
 
-        }
-        
+        }      
        
+    }
+
+    public handleChangePrise = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newState: ICar = this.state.car;
+        newState.car_prise= e.target.value;  
+        this.setState({car: newState});
+    }
+
+    public handleChangeYear = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        let newState: ICar = this.state.car;
+        newState.car_year = e.target.value;  
+        this.setState({car: newState});
+    }
+
+    public handleChangeManufacturer = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        let newState: ICar = this.state.car;
+        newState.manufacturer.objectId = e.target.value;  
+        newState.manufacturer.manufacturer = e.target.selectedOptions.item(0).text;
+        newState.manufacturer.country = '';
+        this.setState({car: newState});
+    }
+
+    public handleChangeModel = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newState: ICar = this.state.car;
+        newState.model = e.target.value;  
+        this.setState({car: newState});
+    }
+
+    public handleChangeContactPerson = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newState: ICar = this.state.car;
+        newState.contact_person = e.target.value;  
+        this.setState({car: newState});
+    }
+
+    public handleChangeContactNumber  = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newState: ICar = this.state.car;
+        newState.contact_phone = e.target.value;  
+        this.setState({car: newState});
+    }
+
+    public handleChangeDescription = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        let newState: ICar = this.state.car;
+        newState.description = e.target.value; 
+        this.setState({car: newState});
     }
     
     public render() { 
@@ -142,9 +197,15 @@ export class CarsEditor extends React.Component<any, any> {
                         <div className="col">                                           
                              <label className="pt-label pt-inline">ID: 
                              <input type="text" required={true}  className="pt-input pt-disabled"
-                                 value={this.state.car.car_id}/> 
+                                 value={this.state.car.objectId}/> 
                              </label>   
-                        </div>   
+                        </div> 
+                        <div className="col">
+                            <label  className="pt-label pt-inline">Prise: 
+                            <input type="text" className="pt-input" placeholder="Enter prise"
+                                    value={this.state.car.car_prise} onChange={this.handleChangePrise} />
+                            </label>
+                        </div>  
                         <div className="col justify-content-end text-right">
                              <label  className="pt-label pt-inline">Post date: </label>
                              <DateInput
@@ -178,7 +239,8 @@ export class CarsEditor extends React.Component<any, any> {
                         <div className="col">
                              <label className="pt-label pt-inline">
                                 Model:
-                                <input className="pt-input" type="text" size={8} placeholder="Enter a model" dir="auto" />
+                                <input className="pt-input" type="text" size={8} placeholder="Enter a model" dir="auto" 
+                                     value={this.state.car.model} onChange={this.handleChangeModel}/>
                             </label>
                         </div>
                         <div className="col">
@@ -194,13 +256,15 @@ export class CarsEditor extends React.Component<any, any> {
                         <div className="col">
                             <div className="pt-input-group">
                                  <span className="pt-icon pt-icon-person"></span>
-                                <input type="text" className="pt-input" placeholder="Enter contact person" />
+                                <input type="text" className="pt-input" placeholder="Enter contact person"
+                                    value={this.state.car.contact_person} onChange={this.handleChangeContactPerson} />
                             </div>
                         </div>
                         <div className="col">
                             <div className="pt-input-group">
                                 <span className="pt-icon pt-icon-phone"></span>
-                                <input type="text" className="pt-input" placeholder="Enter contact number" />
+                                <input type="text" className="pt-input" placeholder="Enter contact number"
+                                    value={this.state.car.contact_phone} onChange={this.handleChangeContactNumber} />
                             </div>
                         </div>
                     </div>   
@@ -210,7 +274,8 @@ export class CarsEditor extends React.Component<any, any> {
                             </Carousel>
                             <FileInput disabled={false} text="Choose file..." onInputChange={this.handleFileChange} />
                      <label className="pt-label">Description: </label>
-                                <TextArea className="pt-fill" rows={7}/>
+                                <TextArea className="pt-fill" rows={7}
+                                     value={this.state.car.description} onChange={this.handleChangeDescription}/>
                      <hr/>
                      <div className="text-right">
                          <button type="button" className="pt-button pt-intent-success" onClick={this.handleSave}>Save</button>
@@ -238,7 +303,8 @@ export class CarsEditor extends React.Component<any, any> {
         }
 
         outputJSX = (
-            <select>
+            <select value={this.state.car.car_year} 
+                    onChange={this.handleChangeYear} >
                 { years.map(
                     (year: number) => 
                         <option value={year}>{year}</option>
@@ -255,14 +321,17 @@ export class CarsEditor extends React.Component<any, any> {
      // *
      private renderManufacturerDropdown(): JSX.Element {
         let outputJSX: JSX.Element;
+       
+        let selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.objectId : '';
 
         let manufacturers = DataProvider.getAllManufacturers();
 
         outputJSX = (
-            <select>
-                { manufacturers.map(
+            <select value={selectedValue} onChange={this.handleChangeManufacturer}>                                      
+                {                     
+                    manufacturers.map(
                     (manufacturer: any, i: number) => 
-                        <option value={manufacturer.id}>{manufacturer.manufacturer}</option>
+                        <option key={manufacturer.objectId} value={manufacturer.objectId}>{manufacturer.manufacturer}</option>
                     )
                 }
             </select>
@@ -282,7 +351,7 @@ export class CarsEditor extends React.Component<any, any> {
                 for (const img of this.state.car.images) {
                     const element = (
                         <div>
-                            <img src={img.data} width='400' height="400" />
+                            <img src={img.data.toString()} width='400' height="400" />
                             <p className="legend">{img.filename}</p>
                         </div>
                     )

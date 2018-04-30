@@ -17,10 +17,11 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
  */
 
 module.exports = {
-   // mode: 'development',
+    mode: 'development',
     entry: {
         index: "./src/index.tsx",
         header: "./src/components/Header.tsx",
+        types: "./src/components/Types.tsx",
         mainpage: "./src/components/MainPage.tsx",
         dataProvider: "./src/components/DataProvider.tsx",
         DeletionAlert: "./src/components/DeletionAlert.tsx",

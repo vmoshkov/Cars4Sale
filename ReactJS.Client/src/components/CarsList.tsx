@@ -1,11 +1,18 @@
 import * as React from "react";
 
+import { IImage, ICar } from './Types';
 import { ContextMenuTarget, Menu, MenuItem } from "@blueprintjs/core";
 import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 
 import {DataProvider} from './DataProvider';
 import {DeletionAlert} from './DeletionAlert';
+
+type TCarListState = {
+    data: ICar[],
+    object2deleteId: string,
+    onWarninPopup: boolean
+}
 
 // tslint:disable-next-line:max-classes-per-file
 @ContextMenuTarget
@@ -30,18 +37,28 @@ export class CarsListTableRow extends React.Component<any, any> {
      }
 
     public handleEdit(e: React.MouseEvent<HTMLElement>): void {
-       console.log ("handle edit called with param " + this.props.data.id);  
-       this.props.editorCaller(this.props.data.id);     
+       console.log ("handle edit called with param " + this.props.data.objectId);  
+       this.props.editorCaller(this.props.data.objectId);     
     }
      
     public handleDelete(): void {
-        this.props.deletionConfirmation(this.props.data.id);
+        this.props.deletionConfirmation(this.props.data.objectId);
     }
 
     // Если поменялись свойства, значит надо перегрузить данные в редактор
     public componentWillReceiveProps(nextProps: any) {
 
         let that: CarsListTableRow = this;
+
+        if(nextProps.data.images!==null && nextProps.data.images.length>0)
+        {
+            const mainImage: IImage = nextProps.data.images[0];
+            that.setState({
+                picture: mainImage.data,
+            })
+
+            return;
+        }
 
         fetch("img/no_image.png")
             .then((resp) => {return resp.blob()}) // Transform the data into json
@@ -85,11 +102,11 @@ export class CarsListTableRow extends React.Component<any, any> {
 
     public render() {
        return (
-            <tr className="d-flex" id={this.props.data.id}>
-                <td className="col-1">{this.props.data.id}</td>
-                <td className="col-2">{this.props.data.manufacturer}</td>
+            <tr className="d-flex" id={this.props.data.objectId}>
+                <td className="col-1">{this.props.data.objectId}</td>
+                <td className="col-2">{this.props.data.manufacturer.manufacturer}</td>
                 <td className="col-1">{this.props.data.model}</td>                
-                <td className="col-1">{this.props.data.prise}</td>
+                <td className="col-1">{this.props.data.car_prise}</td>
                 <td className="col-2">{this.props.data.contact_person}</td>
                 <td className="col-2">{this.props.data.contact_phone}</td>
                 <td className="col-4">
@@ -102,15 +119,14 @@ export class CarsListTableRow extends React.Component<any, any> {
 
 
 // tslint:disable-next-line:max-classes-per-file
-export class CarsList extends React.Component<any, any> {
+export class CarsList extends React.Component<any, TCarListState> {
     constructor(props: any){
         super(props);
     
         this.state = {
             data: DataProvider.getAllCars(),
             object2deleteId: "",
-            onWarninPopup: false,
-            
+            onWarninPopup: false,            
         };
           
         this.deletionConfirmation = this.deletionConfirmation.bind(this); 
@@ -126,6 +142,13 @@ export class CarsList extends React.Component<any, any> {
             }
         );
     }
+
+    // Если поменялись свойства, значит надо перегрузить данные в редактор
+    public componentWillReceiveProps(nextProps: any) {
+        let carsList: ICar[] = DataProvider.getAllCars();
+        
+        this.setState({data: carsList});
+     }
 
     public render() {
         return (
@@ -155,7 +178,7 @@ export class CarsList extends React.Component<any, any> {
                     </thead>
                     <tbody>                     
                         {this.state.data.map(
-                            (singleCar: any, i: number) => 
+                            (singleCar: ICar, i: number) => 
                                 <CarsListTableRow key = {i} data = {singleCar} 
                                    editorCaller={this.props.toggleEditor}
                                    deletionConfirmation={this.deletionConfirmation}/>)}   

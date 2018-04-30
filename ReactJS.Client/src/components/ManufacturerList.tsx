@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import {IManufacturer} from './Types';
+
 import { ContextMenuTarget, Menu, MenuItem } from "@blueprintjs/core";
 
 import {DataProvider} from './DataProvider';
@@ -26,12 +28,12 @@ export class ListTableRow extends React.Component<any, any> {
      }
 
     public handleEdit(e: React.MouseEvent<HTMLElement>): void {
-       console.log ("handle edit called with param " + this.props.data.id);
-       this.props.editorCaller(this.props.data.id);          
+       console.log ("handle edit called with param " + this.props.data.objectId);
+       this.props.editorCaller(this.props.data.objectId);          
     }
      
     public handleDelete(): void {
-        this.props.deletionConfirmation(this.props.data.id);
+        this.props.deletionConfirmation(this.props.data.objectId);
     }
 
     public renderContextMenu() {
@@ -47,18 +49,25 @@ export class ListTableRow extends React.Component<any, any> {
 
     public render() {
        return (
-            <tr className="d-flex" id={this.props.data.id}>
-                <td className="col-1">{this.props.data.id}</td>
+            <tr className="d-flex" id={this.props.data.objectId}>
+                <td className="col-1">{this.props.data.objectId}</td>
                 <td className="col-3">{this.props.data.manufacturer}</td>
                 <td className="col-3">{this.props.data.country}</td>
             </tr>
        );
     }
- }
+}
+
+
+type TManufacturerListState = {
+    data: IManufacturer[],
+    object2deleteId: string,
+    onWarninPopup: boolean
+}
 
 
 // tslint:disable-next-line:max-classes-per-file
-export class ManufacturerList extends React.Component<any, any> {
+export class ManufacturerList extends React.Component<any, TManufacturerListState> {
     constructor(props: any){
         super(props);
     
@@ -107,7 +116,7 @@ export class ManufacturerList extends React.Component<any, any> {
                     </thead>
                     <tbody>                     
                         {this.state.data.map(
-                            (manufacturer: any, i: number) => 
+                            (manufacturer:  IManufacturer, i: number) => 
                                 <ListTableRow key = {i} data = {manufacturer} 
                                    editorCaller={this.props.toggleEditor}
                                    deletionConfirmation={this.deletionConfirmation}/>)}    
