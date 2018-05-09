@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="log-path">applogs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console-Appender" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>>
+            </PatternLayout>
+        </Console>
+        <File name="App-File-Appender" fileName="app_log.log" >
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %C - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+        <File name="Controller-File-Appender" fileName="controller_log.log" >
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %C - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+         <File name="Hibernate-File-Appender" fileName="hibernate_log.log" >
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %C - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+        <File name="SpringBoot-File-Appender" fileName="springboot_log.log" >
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.springframework.web" level="debug" additivity="false">
+            <AppenderRef ref="SpringBoot-File-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+        </Logger>
+        <Logger name="ru.vm.cars4sale" level="debug" additivity="false">
+            <AppenderRef ref="App-File-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+         </Logger>
+         <Logger name="ru.vm.cars4sale.CarsControllerTest" level="debug" additivity="false">
+            <AppenderRef ref="Controller-File-Appender"/>           
+         </Logger>
+          <Logger name="ru.vm.cars4sale.controllers" level="debug" additivity="false">
+            <AppenderRef ref="Controller-File-Appender"/>           
+         </Logger>
+         <Logger name="org.hibernate" level="debug" additivity="false">
+            <AppenderRef ref="Hibernate-File-Appender"/>
+            <AppenderRef ref="Console-Appender"/>
+         </Logger>
+        <Root>
+            <AppenderRef ref="Console-Appender"/>
+        </Root>
+    </Loggers>
+</Configuration>
