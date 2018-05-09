@@ -1,0 +1,8 @@
+{
+    "server_url": "http://localhost:9030/",
+    "get_all_manufacturers_command": "manufacturers/getall",
+    "get_manufacturer_command": "manufacturers/get/",
+    "add_manufacturer_command": "manufacturers/add",
+    "edit_manufacturer_command": "manufacturers/edit",
+    "delete_manufacturer_command": "manufacturers/delete"
+}

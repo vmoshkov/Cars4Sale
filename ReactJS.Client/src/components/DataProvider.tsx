@@ -1,28 +1,6 @@
-import {IManufacturer, IImage, ICar} from './Types';
+import {IManufacturer, IImage, ICar, TConfig, globalConfig} from './Types';
 
-export class DataProvider {
-
-    private static readonly data: IManufacturer[] =
-    [
-       {
-          "objectId":"1",
-          "manufacturer":"BMW",
-          // tslint:disable-next-line:object-literal-sort-keys
-          "country":"Germany"
-       },
-       {
-          "objectId": "2",
-          "manufacturer":"FORD",
-          // tslint:disable-next-line:object-literal-sort-keys
-          "country":"USA"
-       },
-       {
-          "objectId":"3",
-          "manufacturer":"Jaguar",
-          // tslint:disable-next-line:object-literal-sort-keys
-          "country":"UK"
-       }
-    ]
+export class DataProvider {   
 
     private static readonly cars_data: ICar[] =
     [
@@ -30,8 +8,8 @@ export class DataProvider {
             objectId: "101",
             item_date: new Date(),
             manufacturer:  {
-                "objectId":"3",
-                "manufacturer":"Jaguar",
+                "id":"3",
+                "name":"Jaguar",
                 // tslint:disable-next-line:object-literal-sort-keys
                 "country":"UK"
              },
@@ -47,8 +25,8 @@ export class DataProvider {
             objectId: "102",
             item_date: new Date(),
             manufacturer:  {
-                "objectId":"1",
-                "manufacturer":"BMW",
+                "id":"1",
+                "name":"BMW",
                 // tslint:disable-next-line:object-literal-sort-keys
                 "country":"Germany"
              },
@@ -65,8 +43,8 @@ export class DataProvider {
             objectId: "103",
             item_date: new Date(),
             manufacturer:  {
-                "objectId":"3",
-                "manufacturer":"Jaguar",
+                "id":"3",
+                "name":"Jaguar",
                 // tslint:disable-next-line:object-literal-sort-keys
                 "country":"UK"
              },
@@ -82,8 +60,8 @@ export class DataProvider {
             objectId: "104",
             item_date: new Date(),
             manufacturer: {
-                "objectId": "2",
-                "manufacturer":"FORD",
+                "id": "2",
+                "name":"FORD",
                 // tslint:disable-next-line:object-literal-sort-keys
                 "country":"USA"
              },
@@ -98,30 +76,72 @@ export class DataProvider {
         
     ]
 
+    public getAllManufacturers(): Promise<any> {
+        let url = globalConfig.getAllManufacturersURL();
+        let serverList: IManufacturer[] = null;
+        // good article about how to deal with CORS: https://m.alphasights.com/killing-cors-preflight-requests-on-a-react-spa-1f9b04aa5730
+        return fetch(url)
+            .then(response => { return response.json();})
+            .then((list) => {                                          
+                    let promise = new Promise(function(resolve, reject) {                          
+                        resolve(list);
+                    });
+
+                    return promise;
+                })
+            .catch(e => console.log(e));              
+    }
+
     // tslint:disable-next-line:member-ordering
-    public static getManufacturer(objId: string): IManufacturer {
+    public static getManufacturer(objId: string): Promise<any> {
+        let url = globalConfig.getManufacturerURL() + objId;
 
-        // tslint:disable-next-line:prefer-const
-        let newManufacturer: IManufacturer = {
-            objectId: objId, 
-            // tslint:disable-next-line:object-literal-sort-keys
-            manufacturer: "cannot load object", 
-            country: 'cannot load object'
-         }
+        return fetch(url)
+            .then(response => { if(response.ok) { return response.json();} else console.log(response)})
+            .then(object => {
+                let promise = new Promise(function(resolve, reject) {                          
+                    resolve(object);
+                });
 
-         for (const element of DataProvider.data) {
-            const elemId: number = parseInt(element.objectId,0);
-            const objID: number = parseInt(objId,0);
-           
-            if (elemId===objID) {
-                newManufacturer.objectId = element.objectId;
-                newManufacturer.manufacturer = element.manufacturer;
-                newManufacturer.country = element.country;
-                break;
+                return promise;
+            } )
+            .catch(e => console.log(e));       
+       
+    }
+
+    // tslint:disable-next-line:member-ordering
+    public static saveManufacturer(manufacturer: IManufacturer): Promise<any> {
+        let url:string = null;
+        let objectStr = JSON.stringify(manufacturer);
+        let json = JSON.parse(objectStr);       
+
+        if(manufacturer.id=="new") {
+            url = globalConfig.addManufacturerURL();
+            delete json["id"]; // we need this because server doesn't expect id key for new objects            
+        }
+        else
+            url = globalConfig.editManufacturerURL();         
+        
+       let realRequest = fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json;charset=UTF-8'},
+            body: JSON.stringify(json)
+        })
+        .then(response => { if(response.ok) { return response.json();} 
+            else {
+                // need to return Promise with a error description here
+                return Promise.reject(response.text());
             }
-         }      
-            
-        return newManufacturer;
+        })
+        .then(object => {
+            let promise = new Promise(function(resolve, reject) {                          
+                resolve(object);
+            });
+
+            return promise;
+        } )       
+
+        return realRequest;      
     }
 
     public static getCar(objId: string): ICar {
@@ -130,8 +150,8 @@ export class DataProvider {
             objectId: objId,
             item_date: new Date(),
             manufacturer: {
-                "objectId":"0",
-                "manufacturer":"",
+                "id":"0",
+                "name":"",
                 "country":""
              },
             model: "cannot load object",
@@ -168,27 +188,11 @@ export class DataProvider {
     }
 
     // tslint:disable-next-line:member-ordering
-    public static getAllManufacturers(): IManufacturer[] {
-        return DataProvider.data;
-    }
-
-    // tslint:disable-next-line:member-ordering
     public static getAllCars(): ICar[] {
         return DataProvider.cars_data;
     }
 
     // tslint:disable-next-line:member-ordering
-    public static saveManufacturer(manufacturer: IManufacturer): IManufacturer {
-        let manuObject: string = JSON.stringify(manufacturer);
-        console.log (manuObject);
-        if(manufacturer.objectId==="new") {
-            manufacturer.objectId = Math.random().toString();
-        }
-
-        return manufacturer;
-    }
-
-     // tslint:disable-next-line:member-ordering
      public static saveCar(car: ICar): ICar {
         let carObject: string = JSON.stringify(car);
         console.log (carObject);
@@ -207,20 +211,5 @@ export class DataProvider {
     public static deleteCar(objectId: string){ 
         console.log ("delete car with id = " + objectId);
     }
-
-   
-    private static randomString(length: number): string {
-        let text = "";
-        const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for(let i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        return text;
-    }
-
-    
-    
-
-
-    
+     
 }

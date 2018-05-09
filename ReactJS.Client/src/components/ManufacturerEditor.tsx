@@ -2,6 +2,8 @@ import * as React from 'react';
 import {IManufacturer} from './Types';
 import {DataProvider} from './DataProvider';
 
+import { Intent, IToaster,  Position, Toaster } from "@blueprintjs/core";
+
 
 type TManufacturerEditorState = {
     manufacturer: IManufacturer
@@ -21,10 +23,10 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
         
         this.state = {
             manufacturer: {
-                objectId: this.props.object_id, 
+                id: "", 
                 // tslint:disable-next-line:object-literal-sort-keys
-                manufacturer: this.props.manufacturer.name, 
-                country: this.props.manufacturer.country
+                name: "", 
+                country: ""
             }           
         };
         this.handleChangeManufacturer = this.handleChangeManufacturer.bind(this);
@@ -36,19 +38,33 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
 
     // Если поменялись свойства, значит надо перегрузить данные в редактор
     public componentWillReceiveProps(nextProps: any) {
-       this.setState({
-            manufacturer: {
-                objectId: nextProps.object_id, 
-                // tslint:disable-next-line:object-literal-sort-keys
-                manufacturer: nextProps.object_id==='new' ? '' : nextProps.manufacturer.manufacturer, 
-                country: nextProps.object_id==='new' ? '' : nextProps.manufacturer.country
-            }}            
-        );
+        let that = this;
+
+        if(nextProps.object_id=="new") {
+            let newObject: IManufacturer = 
+                {
+                    "id":"new",
+                    "name":"",                    
+                    "country":""
+                 };
+            
+            that.setState({manufacturer: newObject});
+            return;
+        }
+
+        // Send a request to the server for a manu list
+        DataProvider.getManufacturer(nextProps.object_id)
+        .then ((value:IManufacturer) => { 
+            that.setState({manufacturer: value});
+
+            console.log (this.state.manufacturer);
+        })
+        .catch(e => console.log(e));      
     }
    
     public handleChangeManufacturer = (e: React.ChangeEvent<HTMLInputElement>) => {
         let newState: IManufacturer = this.state.manufacturer;
-        newState.manufacturer = e.target.value;        
+        newState.name = e.target.value;        
         this.setState({manufacturer: newState});
       }
 
@@ -60,20 +76,42 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
 
     // Save handler
     public handleSave = (e: any) => {
-        let newManu: IManufacturer = 
-            DataProvider.saveManufacturer (this.state.manufacturer);
+        let that = this;
+        let newManu: IManufacturer; 
 
-       // update state        
-       this.setState({manufacturer : newManu});
+        DataProvider.saveManufacturer (this.state.manufacturer)
+        .then ((value:IManufacturer) => { 
+            that.setState({manufacturer: value});
+
+            console.log ("from save handler:");
+            console.log (this.state.manufacturer);
+        })
+        .catch((e: Promise<any>) => {
+            e.then (
+                msg => {
+                    console.log(msg);
+
+                    const AppToaster = Toaster.create({
+                        position: Position.TOP_RIGHT            
+                    });
+
+                    AppToaster.show({ 
+                        icon: "hand", 
+                        intent: Intent.DANGER, 
+                        message: msg,
+                        timeout: 5000 });
+                }
+            )
+        })  
     }
 
     // Обработчик отмены
     public handleCancel = (e: any) => {
         // очищаю состояние         
          this.setState({manufacturer : {
-            objectId: '', 
+            id: '', 
             // tslint:disable-next-line:object-literal-sort-keys
-            manufacturer: '', 
+            name: '', 
             country: ''
         }});
 
@@ -91,7 +129,7 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
                             </td>
                             <td className="text-left">
                             <input type="text" required={true}  className="pt-input pt-disabled"
-                                value={this.state.manufacturer.objectId}/> 
+                                value={this.state.manufacturer.id}/> 
                             </td>
                         </tr>                     
                         <tr>
@@ -100,7 +138,7 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
                             </td>
                             <td className="text-left">
                             <input type="text" id="manufacturer" required={true}  className="pt-input"
-                                value={this.state.manufacturer.manufacturer} onChange={this.handleChangeManufacturer}/> 
+                                value={this.state.manufacturer.name} onChange={this.handleChangeManufacturer}/> 
                             </td>
                         </tr>
                         <tr>

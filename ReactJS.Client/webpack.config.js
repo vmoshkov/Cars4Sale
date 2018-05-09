@@ -105,8 +105,9 @@ module.exports = {
             template: path.join(__dirname, 'public', 'index.html'),
         }),
         new CopyWebpackPlugin([
-            { from: 'src/img/', to: 'img/', force: true }
-          ]),
+            { from: 'src/img/', to: 'img/', force: true },
+            { from: 'public/config.json', to: './', force: true }
+          ]),          
         new CleanWebpackPlugin(['build'])
        
     ],

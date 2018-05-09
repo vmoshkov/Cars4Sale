@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react": "^16.3.2",
-    "react-dom": "^16.3.2",
     "react-scripts-ts": "2.15.1"
   },
   "scripts": {
@@ -15,9 +13,10 @@
     "watch": "npx webpack --watch"
   },
   "devDependencies": {
+    "@blueprintjs/datetime": "^2.0.2",
     "@types/jest": "^22.2.3",
     "@types/node": "^9.6.5",
-    "@types/react": "^16.3.11",
+    "@types/react": "^16.3.12",
     "@types/react-dom": "^16.0.5",
     "awesome-typescript-loader": "^5.0.0",
     "bootstrap": "^4.1.0",
@@ -28,6 +27,10 @@
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "http-server": "^0.11.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-responsive-carousel": "^3.1.37",
+    "react-transition-group": "^2.3.1",
     "style-loader": "^0.21.0",
     "typescript": "^2.8.1",
     "webpack": "^4.6.0",

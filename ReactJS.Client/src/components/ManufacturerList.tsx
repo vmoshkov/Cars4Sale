@@ -28,12 +28,12 @@ export class ListTableRow extends React.Component<any, any> {
      }
 
     public handleEdit(e: React.MouseEvent<HTMLElement>): void {
-       console.log ("handle edit called with param " + this.props.data.objectId);
-       this.props.editorCaller(this.props.data.objectId);          
+       console.log ("handle edit called with param " + this.props.data.id);
+       this.props.editorCaller(this.props.data.id);          
     }
      
     public handleDelete(): void {
-        this.props.deletionConfirmation(this.props.data.objectId);
+        this.props.deletionConfirmation(this.props.data.id);
     }
 
     public renderContextMenu() {
@@ -49,9 +49,9 @@ export class ListTableRow extends React.Component<any, any> {
 
     public render() {
        return (
-            <tr className="d-flex" id={this.props.data.objectId}>
-                <td className="col-1">{this.props.data.objectId}</td>
-                <td className="col-3">{this.props.data.manufacturer}</td>
+            <tr className="d-flex" id={this.props.data.id}>
+                <td className="col-1">{this.props.data.id}</td>
+                <td className="col-3">{this.props.data.name}</td>
                 <td className="col-3">{this.props.data.country}</td>
             </tr>
        );
@@ -69,13 +69,13 @@ type TManufacturerListState = {
 // tslint:disable-next-line:max-classes-per-file
 export class ManufacturerList extends React.Component<any, TManufacturerListState> {
     constructor(props: any){
-        super(props);
-    
+        super(props);       
+
         this.state = {
-            data: DataProvider.getAllManufacturers(),
+            data: [],
             object2deleteId: "",
             onWarninPopup: false           
-        };
+        };       
         
         this.deletionConfirmation = this.deletionConfirmation.bind(this);              
     }
@@ -91,8 +91,40 @@ export class ManufacturerList extends React.Component<any, TManufacturerListStat
         );
     } 
 
+    public componentDidMount() {
+        let that = this;
+
+        // Send a request to the server for a manu list
+        new DataProvider().getAllManufacturers()
+        .then ((list:IManufacturer[]) => { 
+            that.setState ({data: list});
+
+            console.log (this.state.data);
+        })
+        .catch(e => console.log(e));
+    }
+
+    // Если поменялись свойства, и при этом значение "показывать", значит надо перезагрузить
+    public componentWillReceiveProps(nextProps: any) {
+        let that = this;       
+
+        if((nextProps.showManufacturersList!==that.props.showManufacturersList) && (nextProps.showManufacturersList==true))
+        {
+            // Send a request to the server for a manu list
+            new DataProvider().getAllManufacturers()
+            .then ((list:IManufacturer[]) => { 
+                that.setState ({data: list});
+
+                console.log (this.state.data);
+            })
+            .catch(e => console.log(e));
+        }
+    }
+
 
     public render() {
+        const list2render: IManufacturer[] = this.state.data;
+
         return (
             <div className="container" style={this.props.style}>                
                  <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -114,17 +146,25 @@ export class ManufacturerList extends React.Component<any, TManufacturerListStat
                             <th className="col-3">Country</th>                            
                         </tr>
                     </thead>
-                    <tbody>                     
-                        {this.state.data.map(
-                            (manufacturer:  IManufacturer, i: number) => 
-                                <ListTableRow key = {i} data = {manufacturer} 
-                                   editorCaller={this.props.toggleEditor}
-                                   deletionConfirmation={this.deletionConfirmation}/>)}    
-                        <DeletionAlert
-                            objectId2delete={this.state.object2deleteId} 
-                            type={DeletionAlert.TypeManufacturer}
-                            onWarninPopup={this.state.onWarninPopup}/>                     
+                    <tbody>    
+                        {(list2render) ? (                
+                            list2render.map(
+                                (manufacturer:  IManufacturer, i: number) => 
+                                    <ListTableRow key = {i} data = {manufacturer} 
+                                    editorCaller={this.props.toggleEditor}
+                                    deletionConfirmation={this.deletionConfirmation}/>)) : 
+                            (
+                            <tr className="d-flex">
+                            <th className="col-1"></th>
+                            <th className="col-3"></th>
+                            <th className="col-3"></th>                            
+                            </tr>)
+                        }                 
                     </tbody>
+                    <DeletionAlert
+                                objectId2delete={this.state.object2deleteId} 
+                                type={DeletionAlert.TypeManufacturer}
+                            onWarninPopup={this.state.onWarninPopup}/> 
                 </table>    
 
                

@@ -50,20 +50,21 @@ export class MainPage extends React.Component<any, any> {
     public toggleManufacturerEditor(manufacturerID: any): void {
        // Если редактор мануфактуреров выключен и лист включен
        if(this.state.stateNumber === 1)
-       {
-           console.log(this.state);
+       {           
             this.setState ({stateNumber: 2});
             this.setState ({manufacturersListOn: false});
             this.setState ({manufacturersEditorOn: true});
+            console.log(this.state);
 
             // Так же тут надо установить параметры с которыми будем открывать редактор
             this.setState ({manufacturer_id: manufacturerID});
        }
        // Если редактор мануфактуреров включен и лист выключен
-       else if (this.state.stateNumber === 2) {
+       else if (this.state.stateNumber === 2) {       
             this.setState ({stateNumber: 1});
             this.setState ({manufacturersListOn: true});
             this.setState ({manufacturersEditorOn: false});
+            console.log(this.state);
            
        }
        // Если 
@@ -165,11 +166,11 @@ export class MainPage extends React.Component<any, any> {
                         </div>
                         <div className="col-10" id='list_editor_container'>
                             <ManufacturerList style={showManufacturersList} 
+                                    showManufacturersList={this.state.manufacturersListOn}
                                     toggleEditor={this.toggleManufacturerEditor}/>
                             
                             <ManufacturerEditor style={showManufacturersEditor} 
                                     object_id={this.state.manufacturer_id}
-                                    manufacturer={DataProvider.getManufacturer(this.state.manufacturer_id)}
                                     toggleEditor={this.toggleManufacturerEditor} /> 
 
                             <CarsList style={showCarsList} 

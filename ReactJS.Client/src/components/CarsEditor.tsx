@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { IImage, ICar } from './Types';
+import { IImage, ICar, IManufacturer } from './Types';
 import { Alert, FileInput, Intent, TextArea,  IToaster,  Position, Toaster  } from "@blueprintjs/core";
 import { Classes, DateInput } from "@blueprintjs/datetime";
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
@@ -159,8 +159,8 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
 
     public handleChangeManufacturer = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let newState: ICar = this.state.car;
-        newState.manufacturer.objectId = e.target.value;  
-        newState.manufacturer.manufacturer = e.target.selectedOptions.item(0).text;
+        newState.manufacturer.id = e.target.value;  
+        newState.manufacturer.name = e.target.selectedOptions.item(0).text;
         newState.manufacturer.country = '';
         this.setState({car: newState});
     }
@@ -321,17 +321,25 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
      // *
      private renderManufacturerDropdown(): JSX.Element {
         let outputJSX: JSX.Element;
+        let that = this;
+        let currentState = that.state;
        
-        let selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.objectId : '';
+        let selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.id : '';
 
-        let manufacturers = DataProvider.getAllManufacturers();
+        let manufacturers: IManufacturer[] = [];
+        
+        new DataProvider().getAllManufacturers()
+        .then ((list:IManufacturer[]) => { 
+            
+        })
+        .catch(e => console.log(e));
 
         outputJSX = (
             <select value={selectedValue} onChange={this.handleChangeManufacturer}>                                      
                 {                     
                     manufacturers.map(
                     (manufacturer: any, i: number) => 
-                        <option key={manufacturer.objectId} value={manufacturer.objectId}>{manufacturer.manufacturer}</option>
+                        <option key={manufacturer.id} value={manufacturer.id}>{manufacturer.name}</option>
                     )
                 }
             </select>
