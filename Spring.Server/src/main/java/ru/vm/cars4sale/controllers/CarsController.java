@@ -1,6 +1,5 @@
 package ru.vm.cars4sale.controllers;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ru.vm.cars4sale.data.MyCarRepository;
 import ru.vm.cars4sale.models.Car;
-import ru.vm.cars4sale.models.Image;
-import ru.vm.cars4sale.models.Manufacturer;
 
 @RestController
 @RequestMapping("/cars")
