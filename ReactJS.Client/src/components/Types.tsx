@@ -11,15 +11,15 @@ export interface IImage {
 }
 
 export interface ICar {
-    objectId: string,
-    item_date: Date,
+    id: string,
+    entryDate: Date,
     manufacturer: IManufacturer,
     model: string,
-    car_year: string,
+    year: string,
     description: string,
-    car_prise: string,
-    contact_person: string,
-    contact_phone: string,
+    prise: string,
+    contactPerson: string,
+    contactPhone: string,
     images:  IImage[]
 }
 
@@ -40,6 +40,9 @@ export class TConfig {
                     this.addManufacturerURLstr = config.add_manufacturer_command;
                     this.editManufacturerURLstr = config.edit_manufacturer_command;
                     this.deleteManufacturerURLstr = config.delete_manufacturer_command;
+                    this.allCarsURLstr = config.get_all_cars_command;
+                    this.addCarURLstr = config.add_car_command;
+                    this.editCarURLstr = config.edit_car_command;
                 })
             .catch(e => console.log(e));
     }
@@ -64,12 +67,31 @@ export class TConfig {
         return this.serverURL + this.editManufacturerURLstr;
     }
 
+    public deleteManufaturerURL(): string {
+        return this.serverURL + this.deleteManufacturerURLstr; 
+    }
+
+    public getAllCarsURL(): string {
+        return this.serverURL + this.allCarsURLstr;
+    }
+
+    public addCarURL(): string {
+        return this.serverURL + this.addCarURLstr;
+    }
+
+    public editCarURL(): string {
+        return this.serverURL + this.editCarURLstr;
+    }
+
     private serverURL: string = null;
     private allManufacturersURLstr: string = null;
     private getManufacturerURLstr: string = null;
     private addManufacturerURLstr: string = null;
     private editManufacturerURLstr: string = null;
     private deleteManufacturerURLstr: string = null;
+    private allCarsURLstr: string = null;
+    private addCarURLstr: string = null;
+    private editCarURLstr: string = null;
 }
 
 export let globalConfig = new TConfig();

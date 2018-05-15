@@ -167,13 +167,14 @@ export class MainPage extends React.Component<any, any> {
                         <div className="col-10" id='list_editor_container'>
                             <ManufacturerList style={showManufacturersList} 
                                     showManufacturersList={this.state.manufacturersListOn}
-                                    toggleEditor={this.toggleManufacturerEditor}/>
+                                    toggleEditor={this.toggleManufacturerEditor}/>                            
                             
                             <ManufacturerEditor style={showManufacturersEditor} 
                                     object_id={this.state.manufacturer_id}
-                                    toggleEditor={this.toggleManufacturerEditor} /> 
+                                    toggleEditor={this.toggleManufacturerEditor} />                            
 
                             <CarsList style={showCarsList} 
+                                    showCarList = {showCarsList}
                                     toggleEditor={this.toggleCarsEditor} />     
 
                             <CarsEditor style={showCarsEditor} 

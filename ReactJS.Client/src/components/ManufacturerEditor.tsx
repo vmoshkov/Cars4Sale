@@ -52,6 +52,9 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
             return;
         }
 
+        if (!nextProps.object_id)
+            return;
+
         // Send a request to the server for a manu list
         DataProvider.getManufacturer(nextProps.object_id)
         .then ((value:IManufacturer) => { 

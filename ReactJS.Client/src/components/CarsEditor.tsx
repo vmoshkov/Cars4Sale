@@ -12,7 +12,8 @@ import  {DataProvider} from './DataProvider';
 import { ICON_LARGE } from '@blueprintjs/core/lib/esm/common/classes';
 
 type TCarEditorState = {
-    car: ICar
+    car: ICar,
+    manufacturersList: IManufacturer[];
 };
 
 export class CarsEditor extends React.Component<any, TCarEditorState> {
@@ -21,7 +22,8 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
        let newCar: ICar = DataProvider.getCar(props.object_id);
                
        this.state = {
-            car: newCar       
+            car: newCar,
+            manufacturersList: []    
         };
 
         this.handleSave = this.handleSave.bind(this);
@@ -39,11 +41,26 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
     }
 
     // Если поменялись свойства, значит надо перегрузить данные в редактор
-    public componentWillReceiveProps(nextProps: any) {
+    public componentWillReceiveProps(nextProps: any) {        
         let newCar: ICar = DataProvider.getCar(nextProps.object_id);
+        let manufacturers: IManufacturer[] = null;
+
+        new DataProvider().getAllManufacturers()
+        .then ((list:IManufacturer[]) => { 
+            this.setState({manufacturersList: list});
+        })
+        .catch(e => console.log(e));
         
         this.setState({car: newCar});
-     }
+    }
+
+    public componentDidMount() {
+        new DataProvider().getAllManufacturers()
+        .then ((list:IManufacturer[]) => { 
+            this.setState({manufacturersList:  list});
+        })
+        .catch(e => console.log(e));
+    }
 
      // Save handler
     public handleSave = (e: any) => {
@@ -61,26 +78,47 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
             return;
         }
 
-        let newCar = 
-            DataProvider.saveCar(this.state.car);
+        
+        DataProvider.saveCar(this.state.car)
+            .then((jsonObject: ICar) => {
+                // update state      
+                this.setState({car : jsonObject});
 
-       // update state      
-       this.setState({car : newCar});
+                console.log ("from save handler:");
+                console.log (this.state.car);
+            })
+            .catch((e: Promise<any>) => {
+                e.then (
+                    msg => {
+                        console.log(msg);
+    
+                        const AppToaster = Toaster.create({
+                            position: Position.TOP_RIGHT            
+                        });
+    
+                        AppToaster.show({ 
+                            icon: "hand", 
+                            intent: Intent.DANGER, 
+                            message: msg,
+                            timeout: 5000 });
+                    }
+                )
+            });      
 
     }
 
     // Обработчик отмены
     public handleCancel = (e: any) => {
         let emptyCar: ICar = {
-            objectId: '',
-            item_date: new Date(),
+            id: '',
+            entryDate: new Date(),
             manufacturer: null,
             model: "",
-            car_year: "",
+            year: "",
             description: "",
-            car_prise: "",
-            contact_person: "",
-            contact_phone: "",
+            prise: "",
+            contactPerson: "",
+            contactPhone: "",
             images: []
         }
         // очищаю состояние         
@@ -94,7 +132,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
     public handleDateChange = (date: Date) => {         
         
         let updatedCar = this.state.car;
-        updatedCar.item_date = date;
+        updatedCar.entryDate = date;
         this.setState({car : updatedCar});       
     }
 
@@ -147,13 +185,13 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
 
     public handleChangePrise = (e: React.ChangeEvent<HTMLInputElement>) => {
         let newState: ICar = this.state.car;
-        newState.car_prise= e.target.value;  
+        newState.prise= e.target.value;  
         this.setState({car: newState});
     }
 
     public handleChangeYear = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let newState: ICar = this.state.car;
-        newState.car_year = e.target.value;  
+        newState.year = e.target.value;  
         this.setState({car: newState});
     }
 
@@ -173,13 +211,13 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
 
     public handleChangeContactPerson = (e: React.ChangeEvent<HTMLInputElement>) => {
         let newState: ICar = this.state.car;
-        newState.contact_person = e.target.value;  
+        newState.contactPerson = e.target.value;  
         this.setState({car: newState});
     }
 
     public handleChangeContactNumber  = (e: React.ChangeEvent<HTMLInputElement>) => {
         let newState: ICar = this.state.car;
-        newState.contact_phone = e.target.value;  
+        newState.contactPhone = e.target.value;  
         this.setState({car: newState});
     }
 
@@ -190,6 +228,8 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
     }
     
     public render() { 
+        const selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.id : '';
+
         return  (
             
             <div className='container pt-card pt-elevation-3' style={this.props.style}>                   
@@ -197,13 +237,13 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                         <div className="col">                                           
                              <label className="pt-label pt-inline">ID: 
                              <input type="text" required={true}  className="pt-input pt-disabled"
-                                 value={this.state.car.objectId}/> 
+                                 value={this.state.car.id}/> 
                              </label>   
                         </div> 
                         <div className="col">
                             <label  className="pt-label pt-inline">Prise: 
                             <input type="text" className="pt-input" placeholder="Enter prise"
-                                    value={this.state.car.car_prise} onChange={this.handleChangePrise} />
+                                    value={this.state.car.prise} onChange={this.handleChangePrise} />
                             </label>
                         </div>  
                         <div className="col justify-content-end text-right">
@@ -220,7 +260,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                                 onChange={this.handleDateChange}
                                 parseDate={str => new Date(str)}
                                 placeholder={"DD/MM/YYYY"}
-                                value={this.state.car.item_date}                                
+                                value={this.state.car.entryDate}                                
                             />  
                         </div>                                                                   
                     </div>
@@ -232,7 +272,14 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                             <label className="pt-label pt-inline">
                                 Manufacturer:
                                 <div className="pt-select">
-                                    {this.renderManufacturerDropdown()}
+                                <select value={selectedValue} onChange={this.handleChangeManufacturer}>                                      
+                                    { (this.state.manufacturersList!=null) ?                   
+                                    this.state.manufacturersList.map(
+                                        (manufacturer: any, i: number) => 
+                                            <option key={manufacturer.id} value={manufacturer.id}>{manufacturer.name}</option>
+                                        ) : ""
+                                    }
+                                </select>
                                 </div>
                             </label>
                         </div>
@@ -257,14 +304,14 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                             <div className="pt-input-group">
                                  <span className="pt-icon pt-icon-person"></span>
                                 <input type="text" className="pt-input" placeholder="Enter contact person"
-                                    value={this.state.car.contact_person} onChange={this.handleChangeContactPerson} />
+                                    value={this.state.car.contactPerson} onChange={this.handleChangeContactPerson} />
                             </div>
                         </div>
                         <div className="col">
                             <div className="pt-input-group">
                                 <span className="pt-icon pt-icon-phone"></span>
                                 <input type="text" className="pt-input" placeholder="Enter contact number"
-                                    value={this.state.car.contact_phone} onChange={this.handleChangeContactNumber} />
+                                    value={this.state.car.contactPhone} onChange={this.handleChangeContactNumber} />
                             </div>
                         </div>
                     </div>   
@@ -303,7 +350,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
         }
 
         outputJSX = (
-            <select value={this.state.car.car_year} 
+            <select value={this.state.car.year} 
                     onChange={this.handleChangeYear} >
                 { years.map(
                     (year: number) => 
@@ -326,21 +373,15 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
        
         let selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.id : '';
 
-        let manufacturers: IManufacturer[] = [];
-        
-        new DataProvider().getAllManufacturers()
-        .then ((list:IManufacturer[]) => { 
-            
-        })
-        .catch(e => console.log(e));
+        let manufacturers: IManufacturer[] = this.state.manufacturersList;       
 
         outputJSX = (
             <select value={selectedValue} onChange={this.handleChangeManufacturer}>                                      
-                {                     
-                    manufacturers.map(
+                { (this.state.manufacturersList) ?                   
+                   this.state.manufacturersList.map(
                     (manufacturer: any, i: number) => 
                         <option key={manufacturer.id} value={manufacturer.id}>{manufacturer.name}</option>
-                    )
+                    ) : ""
                 }
             </select>
         )

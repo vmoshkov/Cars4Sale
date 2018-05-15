@@ -69,20 +69,33 @@ export class DeletionAlert extends React.Component<any, any> {
         const AppToaster = Toaster.create({
             position: Position.TOP_RIGHT            
         });
+
+        let thePromise: Promise<any> = null;
         
         // launch deletion function
         if (this.props.type===DeletionAlert.TypeManufacturer) {
-            DataProvider.deleteManufacturer(this.state.objectId2delete);
+            thePromise = DataProvider.deleteManufacturer(this.state.objectId2delete);
         }
         else if (this.props.type===DeletionAlert.TypeCar) {
             DataProvider.deleteCar(this.state.objectId2delete);
         }
 
-        AppToaster.show({ 
-            icon: "hand", 
-            intent: Intent.WARNING, 
-            message: "Object with id={" + this.state.objectId2delete + "} deleted",
-            timeout: 2000 });
+        thePromise.then(text=>{
+            AppToaster.show({ 
+                icon: "hand", 
+                intent: Intent.SUCCESS, 
+                message: "Object with id={" + this.state.objectId2delete + "} deleted",
+                timeout: 2000 });
+        })
+        .catch(e => {
+            AppToaster.show({ 
+                icon: "hand", 
+                intent: Intent.DANGER, 
+                message: e,
+                timeout: 2000 });
+        })
+
+        
     };
 
     private handleMoveCancel = () => this.setState({ isOpen: false });

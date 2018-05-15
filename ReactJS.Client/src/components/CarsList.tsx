@@ -102,13 +102,13 @@ export class CarsListTableRow extends React.Component<any, any> {
 
     public render() {
        return (
-            <tr className="d-flex" id={this.props.data.objectId}>
-                <td className="col-1">{this.props.data.objectId}</td>
-                <td className="col-2">{this.props.data.manufacturer.manufacturer}</td>
+            <tr className="d-flex" id={this.props.data.id}>
+                <td className="col-1">{this.props.data.id}</td>
+                <td className="col-2">{this.props.data.manufacturer.name}</td>
                 <td className="col-1">{this.props.data.model}</td>                
-                <td className="col-1">{this.props.data.car_prise}</td>
-                <td className="col-2">{this.props.data.contact_person}</td>
-                <td className="col-2">{this.props.data.contact_phone}</td>
+                <td className="col-1">{this.props.data.prise}</td>
+                <td className="col-2">{this.props.data.contactPerson}</td>
+                <td className="col-2">{this.props.data.contactPhone}</td>
                 <td className="col-4">
                    <img  height="50" width="50" src={this.state.picture} /></td>
             </tr>
@@ -124,7 +124,7 @@ export class CarsList extends React.Component<any, TCarListState> {
         super(props);
     
         this.state = {
-            data: DataProvider.getAllCars(),
+            data: [],
             object2deleteId: "",
             onWarninPopup: false,            
         };
@@ -143,11 +143,32 @@ export class CarsList extends React.Component<any, TCarListState> {
         );
     }
 
+    public componentDidMount() {
+        let that = this;
+
+        // Send a request to the server for a car list
+        DataProvider.getAllCars()
+        .then ((list:ICar[]) => { 
+            that.setState ({data: list});         
+        })
+        .catch(e => console.log(e));
+    }
+
     // Если поменялись свойства, значит надо перегрузить данные в редактор
     public componentWillReceiveProps(nextProps: any) {
-        let carsList: ICar[] = DataProvider.getAllCars();
-        
-        this.setState({data: carsList});
+        let that = this;
+
+        if((nextProps.showCarList!==that.props.showCarList) && (nextProps.showCarList==true))
+        {
+            // Send a request to the server for a manu list
+            DataProvider.getAllCars()
+            .then ((list:ICar[]) => { 
+                that.setState ({data: list});
+
+                console.log (this.state.data);
+            })
+            .catch(e => console.log(e));
+        }
      }
 
     public render() {

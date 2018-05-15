@@ -97,9 +97,7 @@ export class ManufacturerList extends React.Component<any, TManufacturerListStat
         // Send a request to the server for a manu list
         new DataProvider().getAllManufacturers()
         .then ((list:IManufacturer[]) => { 
-            that.setState ({data: list});
-
-            console.log (this.state.data);
+            that.setState ({data: list});         
         })
         .catch(e => console.log(e));
     }
