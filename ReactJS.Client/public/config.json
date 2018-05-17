@@ -4,5 +4,10 @@
     "get_manufacturer_command": "manufacturers/get/",
     "add_manufacturer_command": "manufacturers/add",
     "edit_manufacturer_command": "manufacturers/edit",
-    "delete_manufacturer_command": "manufacturers/delete"
+    "delete_manufacturer_command": "manufacturers/delete",
+    "get_all_cars_command": "cars/getall",
+    "get_car_command": "cars/get/",
+    "edit_car_command": "cars/edit",
+    "add_car_command": "cars/add",
+    "delete_car_command": "cars/delete"
 }

@@ -17,14 +17,11 @@ type TManufacturerEditorState = {
 */
 export class ManufacturerEditor extends React.Component<any, TManufacturerEditorState> {
     constructor (props: any) {
-        super(props);  
-
-        console.log("ManufacturerEditor constructor: id =" + this.props.object_id);
+        super(props);          
         
         this.state = {
             manufacturer: {
-                id: "", 
-                // tslint:disable-next-line:object-literal-sort-keys
+                id: "",                 
                 name: "", 
                 country: ""
             }           
@@ -39,6 +36,10 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
     // Если поменялись свойства, значит надо перегрузить данные в редактор
     public componentWillReceiveProps(nextProps: any) {
         let that = this;
+
+        // if editor is off we have nothing to do
+        if (!nextProps.showEditor)
+            return;
 
         if(nextProps.object_id=="new") {
             let newObject: IManufacturer = 
@@ -55,12 +56,10 @@ export class ManufacturerEditor extends React.Component<any, TManufacturerEditor
         if (!nextProps.object_id)
             return;
 
-        // Send a request to the server for a manu list
+        // Send a request to the server for a manufacturer
         DataProvider.getManufacturer(nextProps.object_id)
         .then ((value:IManufacturer) => { 
-            that.setState({manufacturer: value});
-
-            console.log (this.state.manufacturer);
+            that.setState({manufacturer: value});            
         })
         .catch(e => console.log(e));      
     }

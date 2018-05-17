@@ -6,7 +6,7 @@ export interface IManufacturer {
 
 export interface IImage {
     filename: string,
-    data: object,
+    data: string,
     blob: object
 }
 
@@ -41,8 +41,10 @@ export class TConfig {
                     this.editManufacturerURLstr = config.edit_manufacturer_command;
                     this.deleteManufacturerURLstr = config.delete_manufacturer_command;
                     this.allCarsURLstr = config.get_all_cars_command;
+                    this.getCarURLstr = config.get_car_command;
                     this.addCarURLstr = config.add_car_command;
                     this.editCarURLstr = config.edit_car_command;
+                    this.deleteCarURLstr = config.delete_car_command;
                 })
             .catch(e => console.log(e));
     }
@@ -75,12 +77,20 @@ export class TConfig {
         return this.serverURL + this.allCarsURLstr;
     }
 
+    public getCarURL(): string {
+        return this.serverURL + this.getCarURLstr;
+    }
+
     public addCarURL(): string {
         return this.serverURL + this.addCarURLstr;
     }
 
     public editCarURL(): string {
         return this.serverURL + this.editCarURLstr;
+    }
+
+    public deleteCarURL(): string {
+        return this.serverURL + this.deleteCarURLstr;
     }
 
     private serverURL: string = null;
@@ -90,8 +100,10 @@ export class TConfig {
     private editManufacturerURLstr: string = null;
     private deleteManufacturerURLstr: string = null;
     private allCarsURLstr: string = null;
+    private getCarURLstr: string = null;
     private addCarURLstr: string = null;
     private editCarURLstr: string = null;
+    private deleteCarURLstr: string = null;
 }
 
 export let globalConfig = new TConfig();

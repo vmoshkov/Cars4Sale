@@ -17,7 +17,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
  */
 
 module.exports = {
-    mode: 'development',
+    //mode: 'development',
     entry: {
         index: "./src/index.tsx",
         header: "./src/components/Header.tsx",

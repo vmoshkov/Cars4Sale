@@ -19,7 +19,23 @@ type TCarEditorState = {
 export class CarsEditor extends React.Component<any, TCarEditorState> {
     constructor (props: any) {
        super(props);  
-       let newCar: ICar = DataProvider.getCar(props.object_id);
+       let emptyManu: IManufacturer = {
+            id: "0",                 
+            name: "", 
+            country: ""
+       } 
+       let newCar: ICar = {
+                            id: '',
+                            entryDate: new Date(),
+                            manufacturer: emptyManu,
+                            model: "",
+                            year: "",
+                            description: "",
+                            prise: "",
+                            contactPerson: "",
+                            contactPhone: "",
+                            images: []
+                         }
                
        this.state = {
             car: newCar,
@@ -41,17 +57,67 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
     }
 
     // Если поменялись свойства, значит надо перегрузить данные в редактор
-    public componentWillReceiveProps(nextProps: any) {        
-        let newCar: ICar = DataProvider.getCar(nextProps.object_id);
+    public componentWillReceiveProps(nextProps: any) {   
+        let that = this;     
+        
+        // if editot is off we have nothing to do
+        if (!nextProps.showCarsEditor)
+            return;
+        
+        // refresh maufacturers from server
         let manufacturers: IManufacturer[] = null;
-
         new DataProvider().getAllManufacturers()
         .then ((list:IManufacturer[]) => { 
             this.setState({manufacturersList: list});
         })
         .catch(e => console.log(e));
-        
-        this.setState({car: newCar});
+
+        // if not defined, return
+        if(typeof nextProps.object_id == "undefined")
+            return;
+
+        if(nextProps.object_id=="new") {
+            let emptyManu: IManufacturer = {
+                id: "0",                 
+                name: "", 
+                country: ""
+            }
+
+            let newObject: ICar = 
+                {
+                    id: 'new',
+                    entryDate: new Date(),
+                    manufacturer: emptyManu,
+                    model: "",
+                    year: "",
+                    description: "",
+                    prise: "",
+                    contactPerson: "",
+                    contactPhone: "",
+                    images: []
+                 };
+            
+            that.setState({car: newObject});
+            return;
+        }
+
+        // Send a request to the server for a car
+        DataProvider.getCar(nextProps.object_id)
+        .then ((value:ICar) => { 
+
+            // value.entryDate seems to be not a valid JS date, so I need to convert it
+            value.entryDate = new Date(new String(value.entryDate).toString());
+             // images are to have base64 encoded string in data attribute...
+             if (Array.isArray(value.images) && (value.images.length > 0)) {
+                for (const img of value.images) {
+                    // so need to convert to valid url string
+                    img.data = "data:image/jpeg;base64," + img.data;
+                }
+            }
+
+            that.setState({car: value});           
+        })
+        .catch(e => console.log(e));      
     }
 
     public componentDidMount() {
@@ -68,7 +134,8 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
             position: Position.TOP_RIGHT            
         });
 
-        if (this.state.car.manufacturer===null) {
+        // validate required fields
+        if ((this.state.car.manufacturer===null) || (Number(this.state.car.manufacturer.id) < 1)) {
             AppToaster.show({ 
                 icon: "hand", 
                 intent: Intent.DANGER, 
@@ -78,9 +145,49 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
             return;
         }
 
+        if (isNaN(Number(this.state.car.prise))) {
+            AppToaster.show({ 
+                icon: "hand", 
+                intent: Intent.DANGER, 
+                message: "Please specify a correct prise!",
+                timeout: 2000 });
+
+            return;
+        }
+
+        if (Number(this.state.car.prise)< 1) {
+            AppToaster.show({ 
+                icon: "hand", 
+                intent: Intent.DANGER, 
+                message: "Please specify a correct prise!",
+                timeout: 2000 });
+
+            return;
+        }
+
+        if (Number(this.state.car.year)< 1980) {
+            AppToaster.show({ 
+                icon: "hand", 
+                intent: Intent.DANGER, 
+                message: "Please specify valid year!",
+                timeout: 2000 });
+
+            return;
+        }
+
         
         DataProvider.saveCar(this.state.car)
             .then((jsonObject: ICar) => {
+
+                // jsonObject.entryDate seems to be not a valid JS date, so I need to convert it
+                jsonObject.entryDate = new Date(new String(jsonObject.entryDate).toString());
+                // images are to have base64 encoded string in data attribute...
+                if (Array.isArray(jsonObject.images) && (jsonObject.images.length > 0)) {
+                    for (const img of jsonObject.images) {
+                        // so need to convert to valid url string
+                        img.data = "data:image/jpeg;base64," + img.data;
+                    }
+                }
                 // update state      
                 this.setState({car : jsonObject});
 
@@ -109,10 +216,15 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
 
     // Обработчик отмены
     public handleCancel = (e: any) => {
+        let emptyManu: IManufacturer = {
+            id: "0",                 
+            name: "", 
+            country: ""
+        } 
         let emptyCar: ICar = {
             id: '',
             entryDate: new Date(),
-            manufacturer: null,
+            manufacturer: emptyManu,
             model: "",
             year: "",
             description: "",
@@ -160,7 +272,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                 imageList.unshift(
                     {
                         filename: file.name,
-                        data: result,
+                        data: result.toString(),
                         blob: file
                     }
                 );
@@ -228,7 +340,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
     }
     
     public render() { 
-        const selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.id : '';
+        const selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.id : '0';
 
         return  (
             
@@ -243,14 +355,15 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                         <div className="col">
                             <label  className="pt-label pt-inline">Prise: 
                             <input type="text" className="pt-input" placeholder="Enter prise"
+                                    pattern="[0-9]{6}"
                                     value={this.state.car.prise} onChange={this.handleChangePrise} />
                             </label>
                         </div>  
                         <div className="col justify-content-end text-right">
                              <label  className="pt-label pt-inline">Post date: </label>
-                             <DateInput
+                             <DateInput                              
                                 formatDate={date => {
-                                    if(date!==null) {
+                                    if(date!==null) {                                        
                                         // JS date.getMonth() counts from 0 -> crazy developers!!!!
                                        return (date.getDate().toString() + "/" + (date.getMonth()+1).toString() + "/" + date.getFullYear().toString());
                                     } 
@@ -258,7 +371,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                                     }
                                 }
                                 onChange={this.handleDateChange}
-                                parseDate={str => new Date(str)}
+                                parseDate={str => new Date(str) }                                
                                 placeholder={"DD/MM/YYYY"}
                                 value={this.state.car.entryDate}                                
                             />  
@@ -272,7 +385,8 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
                             <label className="pt-label pt-inline">
                                 Manufacturer:
                                 <div className="pt-select">
-                                <select value={selectedValue} onChange={this.handleChangeManufacturer}>                                      
+                                <select value={selectedValue} onChange={this.handleChangeManufacturer}>  
+                                    <option key="0" value="0">not selected</option>                                    
                                     { (this.state.manufacturersList!=null) ?                   
                                     this.state.manufacturersList.map(
                                         (manufacturer: any, i: number) => 
@@ -352,6 +466,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
         outputJSX = (
             <select value={this.state.car.year} 
                     onChange={this.handleChangeYear} >
+                     <option value="0">not selected</option>
                 { years.map(
                     (year: number) => 
                         <option value={year}>{year}</option>
@@ -363,32 +478,7 @@ export class CarsEditor extends React.Component<any, TCarEditorState> {
         return outputJSX;
      }
 
-     // *
-     // Renders manufacturers children
-     // *
-     private renderManufacturerDropdown(): JSX.Element {
-        let outputJSX: JSX.Element;
-        let that = this;
-        let currentState = that.state;
-       
-        let selectedValue:string = this.state.car.manufacturer !== null ? this.state.car.manufacturer.id : '';
-
-        let manufacturers: IManufacturer[] = this.state.manufacturersList;       
-
-        outputJSX = (
-            <select value={selectedValue} onChange={this.handleChangeManufacturer}>                                      
-                { (this.state.manufacturersList) ?                   
-                   this.state.manufacturersList.map(
-                    (manufacturer: any, i: number) => 
-                        <option key={manufacturer.id} value={manufacturer.id}>{manufacturer.name}</option>
-                    ) : ""
-                }
-            </select>
-        )
-       
-        return outputJSX;
-     }
-
+     
      // *
      // Renders carousel children
      // *

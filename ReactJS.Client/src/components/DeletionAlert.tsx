@@ -77,7 +77,7 @@ export class DeletionAlert extends React.Component<any, any> {
             thePromise = DataProvider.deleteManufacturer(this.state.objectId2delete);
         }
         else if (this.props.type===DeletionAlert.TypeCar) {
-            DataProvider.deleteCar(this.state.objectId2delete);
+            thePromise = DataProvider.deleteCar(this.state.objectId2delete);
         }
 
         thePromise.then(text=>{
@@ -87,15 +87,18 @@ export class DeletionAlert extends React.Component<any, any> {
                 message: "Object with id={" + this.state.objectId2delete + "} deleted",
                 timeout: 2000 });
         })
-        .catch(e => {
+        .catch(error => {
+            Promise.resolve(error).then(value => {            
             AppToaster.show({ 
                 icon: "hand", 
                 intent: Intent.DANGER, 
-                message: e,
-                timeout: 2000 });
+                message: value,
+                timeout: 4000 });
+            }
+            );
         })
 
-        
+        // TODO: update here parent object (refresh a list)
     };
 
     private handleMoveCancel = () => this.setState({ isOpen: false });

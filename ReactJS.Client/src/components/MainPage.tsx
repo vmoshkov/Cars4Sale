@@ -54,8 +54,7 @@ export class MainPage extends React.Component<any, any> {
             this.setState ({stateNumber: 2});
             this.setState ({manufacturersListOn: false});
             this.setState ({manufacturersEditorOn: true});
-            console.log(this.state);
-
+            
             // Так же тут надо установить параметры с которыми будем открывать редактор
             this.setState ({manufacturer_id: manufacturerID});
        }
@@ -63,8 +62,7 @@ export class MainPage extends React.Component<any, any> {
        else if (this.state.stateNumber === 2) {       
             this.setState ({stateNumber: 1});
             this.setState ({manufacturersListOn: true});
-            this.setState ({manufacturersEditorOn: false});
-            console.log(this.state);
+            this.setState ({manufacturersEditorOn: false});   
            
        }
        // Если 
@@ -73,8 +71,7 @@ export class MainPage extends React.Component<any, any> {
            
         }
         // Если 
-       else if (this.state.stateNumber === 4) {
-            console.log(this.state);
+       else if (this.state.stateNumber === 4) {           
             this.setState ({stateNumber: 3});
         }
 
@@ -170,15 +167,17 @@ export class MainPage extends React.Component<any, any> {
                                     toggleEditor={this.toggleManufacturerEditor}/>                            
                             
                             <ManufacturerEditor style={showManufacturersEditor} 
+                                    showEditor = {this.state.manufacturersEditorOn}
                                     object_id={this.state.manufacturer_id}
                                     toggleEditor={this.toggleManufacturerEditor} />                            
 
                             <CarsList style={showCarsList} 
-                                    showCarList = {showCarsList}
+                                    showCarList = {this.state.carsListOn}
                                     toggleEditor={this.toggleCarsEditor} />     
 
                             <CarsEditor style={showCarsEditor} 
                                         object_id={this.state.car_id}
+                                        showCarsEditor={this.state.carsEditorOn}
                                         toggleEditor={this.toggleCarsEditor} />                       
                             
                         </div>

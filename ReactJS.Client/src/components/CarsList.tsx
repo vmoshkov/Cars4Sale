@@ -37,12 +37,12 @@ export class CarsListTableRow extends React.Component<any, any> {
      }
 
     public handleEdit(e: React.MouseEvent<HTMLElement>): void {
-       console.log ("handle edit called with param " + this.props.data.objectId);  
-       this.props.editorCaller(this.props.data.objectId);     
+       console.log ("handle edit called with param " + this.props.data.id);  
+       this.props.editorCaller(this.props.data.id);     
     }
      
     public handleDelete(): void {
-        this.props.deletionConfirmation(this.props.data.objectId);
+        this.props.deletionConfirmation(this.props.data.id);
     }
 
     // Если поменялись свойства, значит надо перегрузить данные в редактор
@@ -54,7 +54,9 @@ export class CarsListTableRow extends React.Component<any, any> {
         {
             const mainImage: IImage = nextProps.data.images[0];
             that.setState({
-                picture: mainImage.data,
+                //images are to have base64 encoded string in data attribute...
+                //so need to convert to valid url string
+                picture: "data:image/jpeg;base64," + mainImage.data,
             })
 
             return;
@@ -132,9 +134,7 @@ export class CarsList extends React.Component<any, TCarListState> {
         this.deletionConfirmation = this.deletionConfirmation.bind(this); 
     }
 
-    public deletionConfirmation(objectID: string): void {
-        console.log("Are you sure you want to delete car with id " + objectID);
-        
+    public deletionConfirmation(objectID: string): void {       
         this.setState (
             {
                 object2deleteId: objectID,
@@ -163,9 +163,7 @@ export class CarsList extends React.Component<any, TCarListState> {
             // Send a request to the server for a manu list
             DataProvider.getAllCars()
             .then ((list:ICar[]) => { 
-                that.setState ({data: list});
-
-                console.log (this.state.data);
+                that.setState ({data: list});              
             })
             .catch(e => console.log(e));
         }

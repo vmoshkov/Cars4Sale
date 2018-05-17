@@ -80,13 +80,11 @@ export class ManufacturerList extends React.Component<any, TManufacturerListStat
         this.deletionConfirmation = this.deletionConfirmation.bind(this);              
     }
 
-    public deletionConfirmation(objectID: string): void {
-        console.log("Are you sure you want to delete manufacturer with id " + objectID);
-        
+    public deletionConfirmation(objectID: string): void {       
         this.setState (
             {
                 object2deleteId: objectID,
-                onWarninPopup: !this.state.onWarninPopup // reverse value
+                onWarninPopup: !this.state.onWarninPopup // reverse value, it will fire dialog
             }
         );
     } 
@@ -112,8 +110,6 @@ export class ManufacturerList extends React.Component<any, TManufacturerListStat
             new DataProvider().getAllManufacturers()
             .then ((list:IManufacturer[]) => { 
                 that.setState ({data: list});
-
-                console.log (this.state.data);
             })
             .catch(e => console.log(e));
         }
